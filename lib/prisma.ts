@@ -16,7 +16,7 @@ const pool = new pg.Pool({
 });
 
 const adapter = new PrismaPg(pool);
-...
+
 const prismaClientSingleton = () => {
   return new PrismaClient({ adapter });
 };
@@ -31,4 +31,3 @@ const prisma = globalThis.prisma ?? prismaClientSingleton();
 export default prisma;
 
 if (process.env.NODE_ENV !== "production") globalThis.prisma = prisma;
-
