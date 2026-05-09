@@ -7,6 +7,8 @@ import { headers } from "next/headers";
 import { Prisma } from "@prisma/client";
 import { logAudit } from "@/lib/audit";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   try {
     const { step, answer } = await req.json();

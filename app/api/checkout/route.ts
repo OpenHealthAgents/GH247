@@ -5,6 +5,8 @@ import { stripe } from "@/lib/stripe";
 import prisma from "@/lib/prisma";
 import { getIntakeSessionId } from "@/lib/session-utils";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: Request) {
   try {
     const authSession = await auth.api.getSession({

@@ -7,6 +7,8 @@ import { logAudit } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const sessionId = getIntakeSessionId();
   const pending = await getPendingIntake(sessionId);
