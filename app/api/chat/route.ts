@@ -19,13 +19,19 @@ export async function POST(req: Request) {
         { status: 500, headers: { "Content-Type": "application/json" } }
       );
     }
-...
 
-  const result = await streamText({
-    model: openai("gpt-4o-mini"),
-    system: AI_SYSTEM_PROMPT,
-    messages,
-  });
+    const result = await streamText({
+      model: openai("gpt-4o-mini"),
+      system: AI_SYSTEM_PROMPT,
+      messages,
+    });
 
-  return result.toTextStreamResponse();
+    return result.toTextStreamResponse();
+  } catch (error) {
+    console.error("POST /api/chat - Fatal error:", error);
+    return new Response(
+      JSON.stringify({ error: "Internal Server Error" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
 }
