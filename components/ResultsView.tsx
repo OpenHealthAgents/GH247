@@ -1,9 +1,12 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
-import { calculatePersonalization, PersonalizationResult } from "@/lib/personalization";
+import React, { useEffect, useState } from "react";
+import { PersonalizationResult } from "@/lib/personalization";
+import { RegionConfig } from "@/lib/region-config";
+
 import { RecommendationResult } from "@/lib/recommendations";
 import { CheckCircle2, TrendingDown, Calendar, Activity, ShieldCheck } from "lucide-react";
+
 import { motion } from "framer-motion";
 import { TestimonialCard } from "@/components/trust/TestimonialCard";
 import { StatsBanner } from "@/components/trust/StatsBanner";
@@ -11,45 +14,23 @@ import { FALLBACK_TRUST_CONTENT, TrustContent } from "@/lib/trust-data";
 
 export interface ResultsViewProps {
   onCheckout: () => void;
-  initialResult?: {
-    data?: {
-      height?: number;
-      weight?: number;
-      goalWeight?: number;
-    };
-    recommendations?: RecommendationResult;
-  } | null;
 }
 
-export default function ResultsView({ onCheckout, initialResult }: ResultsViewProps) {
-  const initialPersonalization = useMemo(() => (
-    initialResult?.data?.height !== undefined &&
-    initialResult.data.weight !== undefined &&
-    initialResult.data.goalWeight !== undefined
-      ? calculatePersonalization(
-          initialResult.data.weight,
-          initialResult.data.goalWeight,
-          initialResult.data.height
-        )
-      : null
-  ), [initialResult]);
-  const [personalization, setPersonalization] = useState<PersonalizationResult | null>(initialPersonalization);
-  const [recommendations, setRecommendations] = useState<RecommendationResult | null>(
-    initialResult?.recommendations ?? null
-  );
+export default function ResultsView({ onCheckout }: ResultsViewProps) {
+  const [personalization, setPersonalization] = useState<(PersonalizationResult & { region: RegionConfig }) | null>(null);
+  const [recommendations, setRecommendations] = useState<(RecommendationResult & { region: RegionConfig }) | null>(null);
   const [trustContent, setTrustContent] = useState<TrustContent[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const needsPersonalization = !initialPersonalization;
-        const needsRecommendations = !initialResult?.recommendations;
         const [pRes, rRes, tRes] = await Promise.all([
-          needsPersonalization ? fetch("/api/personalization") : Promise.resolve(null),
-          needsRecommendations ? fetch("/api/recommendations") : Promise.resolve(null),
+          fetch("/api/personalization"),
+          fetch("/api/recommendations"),
           fetch("/api/trust"),
         ]);
+
         
         if (pRes?.ok) {
           const pData = await pRes.json();
@@ -72,7 +53,8 @@ export default function ResultsView({ onCheckout, initialResult }: ResultsViewPr
       }
     }
     fetchData();
-  }, [initialPersonalization, initialResult?.recommendations]);
+  }, []);
+
 
   if (loading) {
     return (
@@ -152,7 +134,10 @@ export default function ResultsView({ onCheckout, initialResult }: ResultsViewPr
           <StatCard 
             icon={<TrendingDown className="h-5 w-5 text-green-500" />} 
             label="Weekly Loss" 
-            value={`${personalization.weeklyWeightLossRange.min}-${personalization.weeklyWeightLossRange.max}kg`} 
+            value={personalization.region.system === "imperial" 
+              ? `${Math.round(personalization.weeklyWeightLossRange.min * 2.20462)}-${Math.round(personalization.weeklyWeightLossRange.max * 2.20462)} lbs`
+              : `${personalization.weeklyWeightLossRange.min}-${personalization.weeklyWeightLossRange.max} kg`
+            } 
           />
           <StatCard 
             icon={<Calendar className="h-5 w-5 text-purple-500" />} 
@@ -162,8 +147,9 @@ export default function ResultsView({ onCheckout, initialResult }: ResultsViewPr
           <StatCard 
             icon={<ShieldCheck className="h-5 w-5 text-yellow-500" />} 
             label="Goal Weight" 
-            value={`${initialResult?.data?.goalWeight || 75}kg`} 
+            value={personalization.estimatedWeeksToGoal.min === 0 ? "Goal Reached" : "Target Set"} 
           />
+
         </div>
 
 

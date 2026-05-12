@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest) {
   try {
     const { step, answer } = await req.json();
-    const sessionId = getIntakeSessionId();
+    const sessionId = await getIntakeSessionId();
 
     if (!step || !Object.values(IntakeStep).includes(step as IntakeStep)) {
       return NextResponse.json({ error: "Invalid step" }, { status: 400 });
@@ -43,16 +43,32 @@ export async function POST(req: NextRequest) {
 
     // Get user session if available
     const userSession = await auth.api.getSession({
-      headers: headers(),
+      headers: await headers(),
     });
 
     // Update state in DB
+    let answerToStore = result.data;
+    const { getDetectedRegion } = await import("@/lib/region-server");
+    const region = await getDetectedRegion();
+
+    // Unit Conversion for Imperial Regions (US, CA, etc.)
+    if (region.system === "imperial" && typeof answerToStore === "number") {
+      const { units } = await import("@/lib/region-shared");
+      if (step === IntakeStep.HEIGHT) {
+        answerToStore = units.inchesToCm(answerToStore);
+      } else if (step === IntakeStep.WEIGHT || step === IntakeStep.GOAL_WEIGHT) {
+        answerToStore = units.lbsToKg(answerToStore);
+      }
+    }
+
+
     const updatedPending = await updatePendingIntake(
       sessionId,
       step as IntakeStep,
-      result.data as Prisma.InputJsonValue,
+      answerToStore as Prisma.InputJsonValue,
       userSession?.user.id
     );
+
 
     await logAudit({
       userId: userSession?.user.id,
@@ -216,7 +232,7 @@ export async function POST(req: NextRequest) {
         recommendations,
       });
       
-      setIntakeSessionId(sessionId); // Ensure cookie is set
+      await setIntakeSessionId(sessionId); // Ensure cookie is set
       return response;
     }
 
@@ -226,7 +242,7 @@ export async function POST(req: NextRequest) {
       data: intakeData,
     });
     
-    setIntakeSessionId(sessionId);
+    await setIntakeSessionId(sessionId);
     return response;
   } catch (error) {
     console.error("Intake error:", error);

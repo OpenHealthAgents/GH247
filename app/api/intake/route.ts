@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   console.log("GET /api/intake - Starting request");
   try {
-    const sessionId = getIntakeSessionId();
+    const sessionId = await getIntakeSessionId();
     console.log("GET /api/intake - Session ID:", sessionId);
     
     const pending = await getPendingIntake(sessionId);
@@ -20,7 +20,7 @@ export async function GET() {
     let session = null;
     try {
       session = await auth.api.getSession({
-        headers: headers(),
+        headers: await headers(),
       });
     } catch (authError) {
       console.warn("GET /api/intake - Auth session fetch failed (non-fatal):", authError);
@@ -58,11 +58,11 @@ export async function GET() {
 
 
 export async function DELETE() {
-  const sessionId = getIntakeSessionId();
+  const sessionId = await getIntakeSessionId();
   const pending = await getPendingIntake(sessionId);
 
   const session = await auth.api.getSession({
-    headers: headers(),
+    headers: await headers(),
   });
 
   if (pending) {

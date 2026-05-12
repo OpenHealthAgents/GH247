@@ -3,6 +3,8 @@
 import { authClient } from "@/lib/auth-client";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { SocialAuthButtons } from "./SocialAuthButtons";
+
 
 export function LoginButton() {
   const { data: session, isPending } = authClient.useSession();
@@ -71,45 +73,50 @@ export function LoginButton() {
       </button>
 
       {isOpen && (
-        <form
-          className="absolute right-0 top-full z-50 mt-2 flex w-72 flex-col gap-2 rounded-lg border border-zinc-200 bg-white p-3 shadow-lg dark:border-zinc-800 dark:bg-zinc-950 sm:w-80"
-          onSubmit={handleLogin}
-        >
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="min-w-0 rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-950"
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="min-w-0 rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-950"
-            required
-          />
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 rounded-lg bg-zinc-900 py-2 text-sm text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
-            >
-              Login
-            </button>
-            <button
-              type="button"
-              onClick={handleSignUp}
-              disabled={loading}
-              className="flex-1 rounded-lg border border-zinc-200 py-2 text-sm disabled:opacity-50 dark:border-zinc-800"
-            >
-              Sign Up
-            </button>
-          </div>
-        </form>
+        <div className="absolute right-0 top-full z-50 mt-2 flex w-72 flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-4 shadow-lg dark:border-zinc-800 dark:bg-zinc-950 sm:w-80">
+          <SocialAuthButtons />
+          
+          <form
+            className="flex flex-col gap-2"
+            onSubmit={handleLogin}
+          >
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="min-w-0 rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-950"
+              required
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="min-w-0 rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-950"
+              required
+            />
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 rounded-lg bg-zinc-900 py-2 text-sm text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+              >
+                Login
+              </button>
+              <button
+                type="button"
+                onClick={handleSignUp}
+                disabled={loading}
+                className="flex-1 rounded-lg border border-zinc-200 py-2 text-sm disabled:opacity-50 dark:border-zinc-800"
+              >
+                Sign Up
+              </button>
+            </div>
+          </form>
+        </div>
       )}
+
     </div>
   );
 }

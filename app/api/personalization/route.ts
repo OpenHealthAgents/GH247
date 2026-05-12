@@ -5,18 +5,22 @@ import { calculatePersonalization } from "@/lib/personalization";
 import { logAudit } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { getDetectedRegion } from "@/lib/region-server";
 
 export const dynamic = "force-dynamic";
 
+
 export async function GET() {
-  const sessionId = getIntakeSessionId();
+  const sessionId = await getIntakeSessionId();
   const pending = await getPendingIntake(sessionId);
   const data = (pending?.data as Record<string, unknown>) || {};
   const { height, weight, goalWeight } = data;
 
   const session = await auth.api.getSession({
-    headers: headers(),
+    headers: await headers(),
   });
+
+  const region = await getDetectedRegion();
 
   if (pending) {
     await logAudit({
@@ -41,9 +45,8 @@ export async function GET() {
 
   const result = calculatePersonalization(weight, goalWeight, height, data);
 
-
-
-  return NextResponse.json(result);
+  return NextResponse.json({
+    ...result,
+    region,
+  });
 }
-
-

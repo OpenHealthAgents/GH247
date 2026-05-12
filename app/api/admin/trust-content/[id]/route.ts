@@ -6,21 +6,21 @@ import { headers } from "next/headers";
 
 async function isAdmin() {
   const session = await auth.api.getSession({
-    headers: headers(),
+    headers: await headers(),
   });
   return session?.user.role === "admin";
 }
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   if (!(await isAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
     const result = TrustContentSchema.partial().safeParse(body);
 
@@ -48,14 +48,14 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   if (!(await isAdmin())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const { id } = params;
+    const { id } = await params;
     await prisma.trustContent.delete({
       where: { id },
     });

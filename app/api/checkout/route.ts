@@ -3,39 +3,28 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { stripe } from "@/lib/stripe";
 import prisma from "@/lib/prisma";
-import { getIntakeSessionId } from "@/lib/session-utils";
+import { getDetectedRegion } from "@/lib/region-server";
 
 export const dynamic = "force-dynamic";
+
+
 
 export async function POST(req: Request) {
   try {
     const authSession = await auth.api.getSession({
-      headers: headers(),
+      headers: await headers(),
     });
 
-    const sessionId = getIntakeSessionId();
-    
-    // Find the user ID either from auth session or from the pending intake
-    let userId = authSession?.user.id;
-    let userEmail = authSession?.user.email;
-
-    if (!userId) {
-      const pending = await prisma.pendingIntake.findUnique({
-        where: { sessionId },
-      });
-      
-      if (pending?.userId) {
-        userId = pending.userId;
-        const user = await prisma.user.findUnique({ where: { id: userId } });
-        userEmail = user?.email;
-      }
+    if (!authSession) {
+      return NextResponse.json({ error: "Unauthorized. Please log in to complete your order." }, { status: 401 });
     }
 
-    if (!userId || !userEmail) {
-      return NextResponse.json({ error: "Unauthorized or intake session not found. Please complete the intake first." }, { status: 401 });
-    }
+    const userId = authSession.user.id;
+    const userEmail = authSession.user.email;
+    const region = await getDetectedRegion();
 
     const { planId } = await req.json();
+
 
     if (!planId) {
       return NextResponse.json({ error: "Plan ID is required" }, { status: 400 });
@@ -49,6 +38,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid plan or plan not configured for Stripe" }, { status: 400 });
     }
 
+    const prices = plan.prices as Record<string, number>;
+    const totalPrice = prices[region.currency] || prices.USD;
+
     // Support for testing without Stripe
     if (process.env.MOCK_CHECKOUT === "true") {
       await prisma.order.create({
@@ -59,8 +51,13 @@ export async function POST(req: Request) {
           stripeSessionId: `mock_${Date.now()}`,
         },
       });
-      return NextResponse.json({ url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?status=success` });
+      return NextResponse.json({ 
+        url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?status=success`,
+        currency: region.currency,
+        total: totalPrice
+      });
     }
+
 
 
     const checkoutSession = await stripe.checkout.sessions.create({

@@ -4,16 +4,136 @@ import pg from "pg";
 import "dotenv/config";
 
 const connectionString = `${process.env.DATABASE_URL}`;
-const pool = new pg.Pool({ connectionString });
+const pool = new pg.Pool({ 
+  connectionString,
+  ssl: { rejectUnauthorized: false }
+});
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log("Seeding initial trust content...");
+  console.log("Seeding inventory system...");
 
-  const items = [
-    // Testimonials
+  // 1. Create Products
+  const products = [
     {
+      id: "prod-semaglutide",
+      name: "Semaglutide Injections",
+      description: "Our most popular GLP-1 medication. A once-weekly injection that mimics the GLP-1 hormone to reduce appetite and improve blood sugar.",
+      formFactor: "injection",
+      image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=800&auto=format&fit=crop",
+    },
+    {
+      id: "prod-tirzepatide",
+      name: "Tirzepatide Injections",
+      description: "A dual-acting GIP and GLP-1 receptor agonist. Shown to be the most potent weight loss medication currently available.",
+      formFactor: "injection",
+      image: "https://images.unsplash.com/photo-1583947215259-38e31be8751f?q=80&w=800&auto=format&fit=crop",
+    },
+    {
+      id: "prod-liraglutide",
+      name: "Daily Weight Loss Tablets",
+      description: "A daily oral alternative for those who prefer not to use injections. Highly effective for consistent appetite management.",
+      formFactor: "tablet",
+      image: "https://images.unsplash.com/photo-1471864190281-ad5f9f33d70e?q=80&w=800&auto=format&fit=crop",
+    }
+  ];
+
+  console.log("Upserting products...");
+  for (const product of products) {
+    await prisma.product.upsert({
+      where: { id: product.id },
+      update: product,
+      create: product,
+    });
+  }
+
+  // 2. Create Plans
+  const plans = [
+    // Semaglutide Plans
+    { 
+      id: "sema-1", 
+      productId: "prod-semaglutide",
+      drugType: "semaglutide", 
+      tier: "affordable", 
+      prices: { USD: 299, GBP: 229, EUR: 279 }, 
+      durationMonths: 1, 
+      stripePriceId: "price_sema_1m" 
+    },
+    { 
+      id: "sema-3", 
+      productId: "prod-semaglutide",
+      drugType: "semaglutide", 
+      tier: "affordable", 
+      prices: { USD: 747, GBP: 573, EUR: 699 }, 
+      durationMonths: 3, 
+      stripePriceId: "price_sema_3m" 
+    },
+    { 
+      id: "sema-6", 
+      productId: "prod-semaglutide",
+      drugType: "semaglutide", 
+      tier: "affordable", 
+      prices: { USD: 1314, GBP: 1008, EUR: 1230 }, 
+      durationMonths: 6, 
+      stripePriceId: "price_sema_6m" 
+    },
+    { 
+      id: "sema-12", 
+      productId: "prod-semaglutide",
+      drugType: "semaglutide", 
+      tier: "affordable", 
+      prices: { USD: 2148, GBP: 1644, EUR: 2010 }, 
+      durationMonths: 12, 
+      stripePriceId: "price_sema_12m" 
+    },
+    
+    // Tirzepatide Plans
+    { 
+      id: "tirz-1", 
+      productId: "prod-tirzepatide",
+      drugType: "tirzepatide", 
+      tier: "premium", 
+      prices: { USD: 399, GBP: 309, EUR: 379 }, 
+      durationMonths: 1, 
+      stripePriceId: "price_tirz_1m" 
+    },
+    { 
+      id: "tirz-3", 
+      productId: "prod-tirzepatide",
+      drugType: "tirzepatide", 
+      tier: "premium", 
+      prices: { USD: 897, GBP: 690, EUR: 840 }, 
+      durationMonths: 3, 
+      stripePriceId: "price_tirz_3m" 
+    },
+
+    // Liraglutide (Tablet) Plans
+    { 
+      id: "lira-1", 
+      productId: "prod-liraglutide",
+      drugType: "liraglutide", 
+      tier: "standard", 
+      prices: { USD: 349, GBP: 269, EUR: 329 }, 
+      durationMonths: 1, 
+      stripePriceId: "price_lira_1m" 
+    }
+  ];
+
+  console.log("Upserting plans...");
+  for (const plan of plans) {
+    await prisma.plan.upsert({
+      where: { id: plan.id },
+      update: plan,
+      create: plan as any,
+    });
+  }
+
+  // 3. Seed initial trust content
+  console.log("Seeding trust content...");
+  const trustItems = [
+    {
+      id: "seed-trust-1",
       type: "testimonial",
       title: "Life Changing Results",
       description: "Lost 12kg in 3 months and I've never felt better. The once-weekly injection is so convenient.",
@@ -21,6 +141,7 @@ async function main() {
       isActive: true,
     },
     {
+      id: "seed-trust-2",
       type: "testimonial",
       title: "Finally Found Success",
       description: "Finally something that worked. I had tried every diet under the sun before Wellora.",
@@ -28,61 +149,24 @@ async function main() {
       isActive: true,
     },
     {
-      type: "testimonial",
-      title: "Exceptional Support",
-      description: "The medical support and coaching team are incredible. They really care about your progress.",
-      metadata: { author: "Emma R.", loss: "8kg lost", rating: 5 },
-      isActive: true,
-    },
-    // Stats
-    {
+      id: "seed-stat-1",
       type: "stat",
       title: "Proven Outcomes",
       description: "Users typically lose 5–10% of their body weight within the first 6 months.",
       metadata: { value: "5-10%", metric: "Weight Loss" },
       isActive: true,
-    },
-    {
-      type: "stat",
-      title: "Rapid Results",
-      description: "Most users see measurable results within 4–8 weeks of starting their program.",
-      metadata: { value: "4-8", metric: "Weeks" },
-      isActive: true,
-    },
+    }
   ];
 
-  for (const item of items) {
+  for (const item of trustItems) {
     await prisma.trustContent.upsert({
-      where: { id: `seed-${item.title.replace(/\s+/g, "-").toLowerCase()}` },
+      where: { id: item.id },
       update: item,
-      create: {
-        id: `seed-${item.title.replace(/\s+/g, "-").toLowerCase()}`,
-        ...item,
-        metadata: item.metadata as any,
-      },
+      create: item as any,
     });
   }
 
-  console.log("Seeding plans...");
-
-  const plans = [
-    { id: "sema-1", drugType: "semaglutide", tier: "affordable", price: 299, durationMonths: 1, stripePriceId: "price_sema_1m" },
-    { id: "sema-3", drugType: "semaglutide", tier: "affordable", price: 747, durationMonths: 3, stripePriceId: "price_sema_3m" },
-    { id: "sema-6", drugType: "semaglutide", tier: "affordable", price: 1314, durationMonths: 6, stripePriceId: "price_sema_6m" },
-    { id: "sema-12", drugType: "semaglutide", tier: "affordable", price: 2148, durationMonths: 12, stripePriceId: "price_sema_12m" },
-    { id: "tirz-1", drugType: "tirzepatide", tier: "premium", price: 399, durationMonths: 1, stripePriceId: "price_tirz_1m" },
-    { id: "tirz-3", drugType: "tirzepatide", tier: "premium", price: 897, durationMonths: 3, stripePriceId: "price_tirz_3m" },
-  ];
-
-  for (const plan of plans) {
-    await prisma.plan.upsert({
-      where: { id: plan.id },
-      update: plan,
-      create: plan,
-    });
-  }
-
-  console.log("Seeding completed successfully.");
+  console.log("Inventory seeding completed successfully.");
 }
 
 main()

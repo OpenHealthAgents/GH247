@@ -3,8 +3,8 @@ import { v4 as uuidv4 } from "uuid";
 
 const SESSION_COOKIE_NAME = "wellora_intake_session";
 
-export function getIntakeSessionId() {
-  const cookieStore = cookies();
+export async function getIntakeSessionId() {
+  const cookieStore = await cookies();
   let sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value;
 
   if (!sessionId) {
@@ -17,8 +17,8 @@ export function getIntakeSessionId() {
   return sessionId;
 }
 
-export function setIntakeSessionId(sessionId: string) {
-  const cookieStore = cookies();
+export async function setIntakeSessionId(sessionId: string) {
+  const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE_NAME, sessionId, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

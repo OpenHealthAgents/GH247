@@ -6,7 +6,7 @@ import { headers } from "next/headers";
 
 async function isAdmin() {
   const session = await auth.api.getSession({
-    headers: headers(),
+    headers: await headers(),
   });
   return session?.user.role === "admin";
 }

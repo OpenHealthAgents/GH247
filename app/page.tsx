@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { CheckCircle2, ArrowRight, ShieldCheck, Zap, Star } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function LandingPage() {
   return (
@@ -14,12 +15,15 @@ export default function LandingPage() {
             <Link href="#pricing" className="hover:text-zinc-500">Pricing</Link>
             <Link href="/dashboard" className="hover:text-zinc-500">Dashboard</Link>
           </nav>
-          <Link
-            href="/intake"
-            className="rounded-full bg-zinc-900 px-5 py-2 text-sm font-bold text-white transition-transform hover:scale-105 active:scale-95 dark:bg-zinc-100 dark:text-zinc-900"
-          >
-            Get Started
-          </Link>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <Link
+              href="/intake"
+              className="rounded-full bg-zinc-900 px-5 py-2 text-sm font-bold text-white transition-transform hover:scale-105 active:scale-95 dark:bg-zinc-100 dark:text-zinc-900"
+            >
+              Get Started
+            </Link>
+          </div>
         </div>
       </header>
 

@@ -1,16 +1,37 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { AVAILABLE_PLANS } from "@/lib/plans";
 import { RecommendationResult } from "@/lib/recommendations";
 import { cn } from "@/lib/utils";
-import { Loader2, ShieldCheck, CheckCircle2, Lock, CreditCard } from "lucide-react";
+import { Loader2, ShieldCheck, CheckCircle2, Lock, CreditCard, Box } from "lucide-react";
 import { TrustContent } from "@/lib/trust-data";
 import { StatsBanner } from "@/components/trust/StatsBanner";
 import { TestimonialCard } from "@/components/trust/TestimonialCard";
+import { RegionConfig } from "@/lib/region-config";
+import { formatCurrency } from "@/lib/region-shared";
+import Image from "next/image";
+
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  image: string | null;
+  formFactor: string;
+  plans: Plan[];
+}
+
+interface Plan {
+  id: string;
+  drugType: string;
+  tier: string;
+  prices: Record<string, number>;
+  durationMonths: number;
+  stripePriceId: string | null;
+}
 
 export default function CheckoutView() {
-  const [recommendations, setRecommendations] = useState<RecommendationResult | null>(null);
+  const [recommendations, setRecommendations] = useState<(RecommendationResult & { region: RegionConfig }) | null>(null);
+  const [inventory, setInventory] = useState<Product[]>([]);
   const [trustContent, setTrustContent] = useState<TrustContent[]>([]);
   const [selectedPlanId, setSelectedPlanId] = useState<string>("");
   const [address, setAddress] = useState({
@@ -25,25 +46,42 @@ export default function CheckoutView() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [recRes, trustRes] = await Promise.all([
+        const [recRes, trustRes, invRes] = await Promise.all([
           fetch("/api/recommendations"),
-          fetch("/api/trust")
+          fetch("/api/trust"),
+          fetch("/api/inventory")
         ]);
+
+        let detectedRegion: RegionConfig | null = null;
+        let drugType: string | null = null;
 
         if (recRes.ok) {
           const data = await recRes.json();
           setRecommendations(data);
-          
-          // Default to the first plan of the recommended drug
-          const drugType = data.primary.drugType;
-          const defaultPlan = AVAILABLE_PLANS.find(p => p.drugType === drugType);
-          if (defaultPlan) setSelectedPlanId(defaultPlan.id);
-
+          detectedRegion = data.region;
+          drugType = data.primary.drugType;
         }
 
         if (trustRes.ok) {
           const trustData = await trustRes.json();
           setTrustContent(trustData);
+        }
+
+        if (invRes.ok) {
+          const invData = await invRes.json();
+          setInventory(invData.products);
+          
+          if (!detectedRegion) detectedRegion = invData.region;
+
+          // Auto-select the first plan for the recommended drug
+          if (drugType && invData.products.length > 0) {
+            const product = invData.products.find((p: Product) => 
+              p.name.toLowerCase().includes(drugType!)
+            );
+            if (product && product.plans.length > 0) {
+              setSelectedPlanId(product.plans[0].id);
+            }
+          }
         }
       } catch (error) {
         console.error("Failed to fetch data", error);
@@ -79,7 +117,7 @@ export default function CheckoutView() {
     }
   };
 
-  if (loading) {
+  if (loading || !recommendations) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white dark:bg-black">
         <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
@@ -87,8 +125,22 @@ export default function CheckoutView() {
     );
   }
 
-  const drugType = recommendations?.primary.drugType || "semaglutide";
-  const plans = AVAILABLE_PLANS.filter(p => p.drugType === drugType);
+  const { region } = recommendations;
+  const recommendedDrugType = recommendations.primary.drugType;
+  
+  // Find the recommended product and its plans from inventory
+  const selectedProduct = inventory.find(p => 
+    p.name.toLowerCase().includes(recommendedDrugType)
+  );
+  
+  const plans = selectedProduct?.plans || [];
+  const allPlans = inventory.flatMap(p => p.plans);
+  const selectedPlan = allPlans.find(p => p.id === selectedPlanId);
+
+  const getPriceValue = (plan: Plan) => {
+    const prices = plan.prices as Record<string, number>;
+    return prices[region.currency] || prices.USD;
+  };
 
   return (
     <div className="min-h-screen bg-zinc-50 py-12 px-6 dark:bg-black">
@@ -96,9 +148,35 @@ export default function CheckoutView() {
         <div className="grid gap-12 lg:grid-cols-3">
           {/* Main Checkout Flow */}
           <div className="lg:col-span-2 space-y-8">
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Complete Your Order</h1>
-              <p className="text-zinc-600 dark:text-zinc-400">Secure checkout for your personalized treatment plan.</p>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Complete Your Order</h1>
+                <p className="text-zinc-600 dark:text-zinc-400">Secure checkout for your personalized treatment plan.</p>
+              </div>
+              
+              {/* Product Preview Card */}
+              {selectedProduct && (
+                <div className="flex items-center gap-6 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+                  {selectedProduct.image ? (
+                    <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl">
+                      <Image 
+                        src={selectedProduct.image} 
+                        alt={selectedProduct.name} 
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex h-24 w-24 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800">
+                      <Box className="h-8 w-8 text-zinc-400" />
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{selectedProduct.name}</h3>
+                    <p className="text-sm text-zinc-500 line-clamp-2">{selectedProduct.description}</p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Step 1: Select Duration */}
@@ -106,8 +184,10 @@ export default function CheckoutView() {
               <h2 className="mb-6 text-xl font-bold text-zinc-900 dark:text-zinc-100">1. Select Program Duration</h2>
               <div className="grid gap-4 sm:grid-cols-2">
                 {plans.map((plan) => {
-                  const perMonth = Math.round(plan.price / plan.durationMonths);
-                  const savings = plan.durationMonths === 3 ? "Save $150" : plan.durationMonths === 6 ? "Save $480" : plan.durationMonths === 12 ? "Save $1,440" : null;
+                  const totalPrice = getPriceValue(plan);
+                  const perMonth = Math.round(totalPrice / plan.durationMonths);
+                  
+                  const savings = plan.durationMonths === 3 ? "Most Popular" : plan.durationMonths === 6 ? "Best Value" : plan.durationMonths === 12 ? "Best Deal" : null;
                   
                   return (
                     <button
@@ -129,17 +209,19 @@ export default function CheckoutView() {
                         )}
                       </div>
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-black text-zinc-900 dark:text-zinc-100">${perMonth}</span>
+                        <span className="text-3xl font-black text-zinc-900 dark:text-zinc-100">
+                          {formatCurrency(perMonth, region.currency, region.locale)}
+                        </span>
                         <span className="text-sm font-medium text-zinc-500">/mo</span>
                       </div>
                       <p className="text-xs text-zinc-400">
                         {plan.durationMonths === 1 ? "Great if you want to try it first." : 
                          plan.durationMonths === 3 ? "Our most chosen option." :
-                         plan.durationMonths === 6 ? "Best value for consistent progress." :
+                         plan.durationMonths === 6 ? "Consistent progress package." :
                          "Maximum savings package."}
                       </p>
                       <div className="mt-2 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                        Total: ${plan.price}
+                        Total: {formatCurrency(totalPrice, region.currency, region.locale)}
                       </div>
                     </button>
                   );
@@ -159,7 +241,7 @@ export default function CheckoutView() {
                     type="text"
                     value={address.street}
                     onChange={(e) => setAddress({ ...address, street: e.target.value })}
-                    className="w-full min-w-0 rounded-lg border border-zinc-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:border-zinc-800 dark:bg-zinc-950"
+                    className="w-full min-w-0 rounded-lg border border-zinc-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white"
                   />
                 </div>
                 <div className="grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -170,27 +252,27 @@ export default function CheckoutView() {
                       type="text"
                       value={address.city}
                       onChange={(e) => setAddress({ ...address, city: e.target.value })}
-                      className="w-full min-w-0 rounded-lg border border-zinc-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:border-zinc-800 dark:bg-zinc-950"
+                      className="w-full min-w-0 rounded-lg border border-zinc-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white"
                     />
                   </div>
                   <div className="grid min-w-0 gap-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">State</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">State / Region</label>
                     <input
                       required
                       type="text"
                       value={address.state}
                       onChange={(e) => setAddress({ ...address, state: e.target.value })}
-                      className="w-full min-w-0 rounded-lg border border-zinc-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:border-zinc-800 dark:bg-zinc-950"
+                      className="w-full min-w-0 rounded-lg border border-zinc-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white"
                     />
                   </div>
                   <div className="grid min-w-0 gap-2 sm:col-span-2 lg:col-span-1">
-                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">Zip Code</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">Zip / Postal Code</label>
                     <input
                       required
                       type="text"
                       value={address.zip}
                       onChange={(e) => setAddress({ ...address, zip: e.target.value })}
-                      className="w-full min-w-0 rounded-lg border border-zinc-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:border-zinc-800 dark:bg-zinc-950"
+                      className="w-full min-w-0 rounded-lg border border-zinc-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:border-zinc-800 dark:bg-zinc-950 dark:text-white"
                     />
                   </div>
                 </div>
@@ -204,7 +286,7 @@ export default function CheckoutView() {
                 <CreditCard className="h-8 w-8 text-zinc-400" />
                 <div>
                   <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Mock Payment Enabled</p>
-                  <p className="text-xs text-zinc-500">Your order will be processed without a real charge for this demonstration.</p>
+                  <p className="text-xs text-zinc-500">Your order will be processed in {region.currency} without a real charge for this demonstration.</p>
                 </div>
               </div>
             </div>
@@ -218,9 +300,9 @@ export default function CheckoutView() {
                 <h2 className="mb-4 text-lg font-bold">Order Summary</h2>
                 <div className="space-y-4">
                   <div className="flex justify-between text-sm">
-                    <span className="text-zinc-500 capitalize">{drugType} Program</span>
+                    <span className="text-zinc-500 capitalize">{recommendedDrugType} Program</span>
                     <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                      ${AVAILABLE_PLANS.find(p => p.id === selectedPlanId)?.price || 0}
+                      {selectedPlan ? formatCurrency(getPriceValue(selectedPlan), region.currency, region.locale) : "-"}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
@@ -235,7 +317,7 @@ export default function CheckoutView() {
                     <div className="flex justify-between">
                       <span className="font-bold">Total</span>
                       <span className="text-xl font-black">
-                        ${AVAILABLE_PLANS.find(p => p.id === selectedPlanId)?.price || 0}
+                        {selectedPlan ? formatCurrency(getPriceValue(selectedPlan), region.currency, region.locale) : "-"}
                       </span>
                     </div>
                   </div>
@@ -276,7 +358,7 @@ export default function CheckoutView() {
                   <CheckCircle2 className="h-5 w-5 text-green-500" />
                   <div>
                     <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase">No Hidden Fees</p>
-                    <p className="text-[10px] text-zinc-500">Transparent pricing. No surprises at checkout.</p>
+                    <p className="text-[10px] text-zinc-500">Transparent pricing in {region.currency}.</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">

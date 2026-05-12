@@ -1,13 +1,17 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { Package, TrendingDown, Clock, ChevronRight } from "lucide-react";
+import { RegionConfig } from "@/lib/region-config";
+import { formatCurrency } from "@/lib/region-shared";
 
 interface DashboardData {
   user: {
     email: string;
     name: string | null;
   };
+  region: RegionConfig;
   currentPlan?: {
     drugType: string;
     tier: string;
@@ -34,7 +38,9 @@ interface DashboardData {
 }
 
 export default function DashboardView({ data }: { data: DashboardData }) {
-  const { currentPlan, orders, intake } = data;
+  const { currentPlan, orders, intake, region } = data;
+
+  const unit = region.system === "imperial" ? "lbs" : "kg";
 
   return (
     <div className="min-h-screen bg-zinc-50 py-12 px-6 dark:bg-black">
@@ -82,9 +88,9 @@ export default function DashboardView({ data }: { data: DashboardData }) {
               ) : (
                 <div className="py-8 text-center space-y-4">
                   <p className="text-sm text-zinc-500">You don&apos;t have an active plan yet.</p>
-                  <a href="/" className="inline-block rounded-xl bg-zinc-900 px-6 py-3 text-sm font-bold text-white dark:bg-zinc-100 dark:text-zinc-900">
+                  <Link href="/" className="inline-block rounded-xl bg-zinc-900 px-6 py-3 text-sm font-bold text-white dark:bg-zinc-100 dark:text-zinc-900">
                     Get Started
-                  </a>
+                  </Link>
                 </div>
               )}
             </div>
@@ -106,7 +112,9 @@ export default function DashboardView({ data }: { data: DashboardData }) {
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <span className="text-sm font-bold">${order.plan.price}</span>
+                        <span className="text-sm font-bold">
+                          {formatCurrency(order.plan.price, region.currency, region.locale)}
+                        </span>
                         <ChevronRight className="h-4 w-4 text-zinc-300" />
                       </div>
                     </div>
@@ -131,11 +139,17 @@ export default function DashboardView({ data }: { data: DashboardData }) {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <p className="text-xs font-bold text-zinc-400 uppercase">Current</p>
-                    <p className="text-xl font-black">{intake?.weight || "--"}kg</p>
+                    <p className="text-xl font-black">
+                      {intake?.weight ? Math.round(region.system === "imperial" ? intake.weight * 2.20462 : intake.weight) : "--"}
+                      {unit}
+                    </p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-xs font-bold text-zinc-400 uppercase">Goal</p>
-                    <p className="text-xl font-black">{intake?.goalWeight || "--"}kg</p>
+                    <p className="text-xl font-black">
+                      {intake?.goalWeight ? Math.round(region.system === "imperial" ? intake.goalWeight * 2.20462 : intake.goalWeight) : "--"}
+                      {unit}
+                    </p>
                   </div>
                 </div>
 
