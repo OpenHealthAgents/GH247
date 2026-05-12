@@ -16,7 +16,6 @@
   "dependencies": {
     "@ai-sdk/openai": "^3.0.58",
     "@ai-sdk/react": "^3.0.176",
-    "@better-auth/cli": "1.4.21",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "6.19.3",
     "@stripe/stripe-js": "^9.4.0",
@@ -36,6 +35,7 @@
     "zod": "^4.4.2"
   },
   "devDependencies": {
+    "@better-auth/cli": "1.4.21",
     "@types/node": "^20",
     "@types/pg": "^8.20.0",
     "@types/react": "^18",
