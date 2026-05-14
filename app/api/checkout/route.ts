@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { stripe } from "@/lib/stripe";
 import prisma from "@/lib/prisma";
 import { getDetectedRegion } from "@/lib/region-server";
+import { getBaseUrl } from "@/lib/region-shared";
 
 export const dynamic = "force-dynamic";
 
@@ -52,7 +53,7 @@ export async function POST(req: Request) {
         },
       });
       return NextResponse.json({ 
-        url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?status=success`,
+        url: `${getBaseUrl()}/dashboard?status=success`,
         currency: region.currency,
         total: totalPrice
       });
@@ -69,8 +70,8 @@ export async function POST(req: Request) {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?status=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?status=cancelled`,
+      success_url: `${getBaseUrl()}/dashboard?status=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${getBaseUrl()}/dashboard?status=cancelled`,
       metadata: {
         userId: userId,
         planId: plan.id,

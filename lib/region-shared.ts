@@ -1,44 +1,58 @@
-import { MeasurementSystem } from "./region-config";
-
 /**
- * Formats a price value into the local currency.
- */
-export function formatCurrency(amount: number, currency: string, locale: string = "en-US"): string {
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: currency,
-  }).format(amount);
-}
-
-/**
- * Measurement Conversion Helpers
+ * Unit conversion utilities between Metric and Imperial systems.
  */
 export const units = {
-  kgToLbs: (kg: number) => kg * 2.20462,
-  lbsToKg: (lbs: number) => lbs / 2.20462,
-  cmToInches: (cm: number) => cm / 2.54,
   inchesToCm: (inches: number) => inches * 2.54,
+  cmToInches: (cm: number) => cm / 2.54,
+  lbsToKg: (lbs: number) => lbs * 0.453592,
+  kgToLbs: (kg: number) => kg / 0.453592,
 };
 
 /**
- * Formats height based on the measurement system.
+ * Formats a numeric amount into a localized currency string.
  */
-export function formatHeight(cm: number, system: MeasurementSystem): string {
-  if (system === "imperial") {
-    const totalInches = units.cmToInches(cm);
-    const feet = Math.floor(totalInches / 12);
-    const inches = Math.round(totalInches % 12);
-    return `${feet}'${inches}"`;
+export function formatCurrency(amount: number, currency: string = "USD", locale: string = "en-US") {
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency,
+    }).format(amount);
+  } catch (error) {
+    console.error("Currency formatting error:", error);
+    return `${currency} ${amount.toFixed(2)}`;
   }
-  return `${Math.round(cm)} cm`;
 }
 
 /**
- * Formats weight based on the measurement system.
+ * Ensures a URL string has a protocol (http/https).
+ * If the URL is just a domain (like 'vercel.app'), it defaults to 'https://'.
  */
-export function formatWeight(kg: number, system: MeasurementSystem): string {
-  if (system === "imperial") {
-    return `${Math.round(units.kgToLbs(kg))} lbs`;
+export function sanitizeUrl(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
   }
-  return `${Math.round(kg)} kg`;
+  
+  // If it's a relative path, keep it
+  if (url.startsWith('/')) {
+    return url;
+  }
+
+  // Otherwise assume https for external/domain URLs
+  return `https://${url}`;
+}
+
+/**
+ * Returns the base URL of the application.
+ * Prioritizes NEXT_PUBLIC_APP_URL, then BETTER_AUTH_URL, then a fallback.
+ */
+export function getBaseUrl(): string {
+  const url = process.env.NEXT_PUBLIC_APP_URL || process.env.BETTER_AUTH_URL;
+  if (url) return sanitizeUrl(url) || "http://localhost:3000";
+  
+  // Vercel specific fallback if the others are missing
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  
+  return "http://localhost:3000";
 }
