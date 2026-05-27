@@ -1,31 +1,25 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
+  id            String       @id @default(cuid())
+  email         String       @unique
   name          String?
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean      @default(false)
   image         String?
-  role          String    @default("user") // "user" | "admin" | "doctor"
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
+  role          String       @default("user")
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  eligibility   Eligibility?
+  intake        Intake?
+  orders        Order[]
   accounts      Account[]
-
-  // Wellora Relations
-  intake      Intake?
-  eligibility Eligibility?
-  orders      Order[]
+  sessions      Session[]
 
   @@map("user")
 }
@@ -33,7 +27,7 @@ model User {
 model Session {
   id        String   @id
   expiresAt DateTime
-  token     String
+  token     String   @unique
   createdAt DateTime
   updatedAt DateTime
   ipAddress String?
@@ -41,7 +35,6 @@ model Session {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
   @@map("session")
 }
 
@@ -50,7 +43,6 @@ model Account {
   accountId             String
   providerId            String
   userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -60,6 +52,7 @@ model Account {
   password              String?
   createdAt             DateTime
   updatedAt             DateTime
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("account")
 }
@@ -88,41 +81,33 @@ model PendingIntake {
 }
 
 model Intake {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id])
-  
-  // Identity (captured during intake)
-  firstName   String
-  lastName    String
-  email       String
-  phone       String
-  shippingState String
-
-  // Basic Bio
-  height      Float
-  weight      Float
-  goalWeight  Float
-  gender      String
-  dateOfBirth DateTime
-
-  // Detailed Health Data
-  healthData  Json     // Stores healthCritical, healthExtended, bloodPressure, heartRate, etc.
-  history     Json     // Stores medicationHistory, programHistory, etc.
-  preferences Json     // Stores primaryInterest, formFactor, personalizationGoals
-  
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  firstName      String
+  lastName       String
+  email          String
+  phone          String
+  shippingState  String
+  height         Float
+  weight         Float
+  goalWeight     Float
+  gender         String
+  dateOfBirth    DateTime
+  healthData     Json
+  history        Json
+  preferences    Json
   additionalInfo String?
-
-  createdAt   DateTime @default(now())
+  createdAt      DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id])
 }
 
 model Eligibility {
   id        String   @id @default(cuid())
   userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id])
-  status    String // "eligible" | "not_eligible" | "doctor_review"
+  status    String
   reason    String?
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Product {
@@ -130,42 +115,41 @@ model Product {
   name        String
   description String
   image       String?
-  formFactor  String   // "injection" | "tablet"
+  formFactor  String
   isActive    Boolean  @default(true)
-  plans       Plan[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  plans       Plan[]
 }
 
 model Plan {
   id             String  @id @default(cuid())
   productId      String
-  product        Product @relation(fields: [productId], references: [id])
-  drugType       String // "semaglutide" | "liraglutide" | "tirzepatide"
-  tier           String // "affordable" | "standard" | "premium"
-  prices         Json    // { "USD": 299, "GBP": 229, ... }
+  drugType       String
+  tier           String
+  prices         Json
   durationMonths Int
-  stripePriceId  String?
   isActive       Boolean @default(true)
   orders         Order[]
+  product        Product @relation(fields: [productId], references: [id])
 }
 
 model Order {
   id                   String   @id @default(cuid())
   userId               String
-  user                 User     @relation(fields: [userId], references: [id])
   planId               String
-  plan                 Plan     @relation(fields: [planId], references: [id])
-  status               String // "pending" | "paid" | "shipped" | "failed"
-  stripeSessionId      String?  @unique
-  stripeCustomerId     String?
-  stripeSubscriptionId String?
+  status               String
+  razorpayOrderId      String?  @unique
+  razorpayPaymentId    String?  @unique
+  razorpaySignature    String?
   createdAt            DateTime @default(now())
+  plan                 Plan     @relation(fields: [planId], references: [id])
+  user                 User     @relation(fields: [userId], references: [id])
 }
 
 model TrustContent {
   id          String   @id @default(cuid())
-  type        String // "testimonial" | "stat"
+  type        String
   title       String
   description String
   metadata    Json
@@ -174,13 +158,13 @@ model TrustContent {
 }
 
 model AuditLog {
-  id          String   @id @default(cuid())
-  userId      String?  // ID of the user performing the action (if authenticated)
-  action      String   // e.g., "READ_INTAKE", "CREATE_INTAKE", "UPDATE_ELIGIBILITY"
-  resource    String   // e.g., "Intake", "Eligibility", "PendingIntake"
-  resourceId  String?  // ID of the affected resource (if applicable)
-  details     String?  // Additional context (e.g., IP address, or specific fields accessed - mask PHI here)
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  resource   String
+  resourceId String?
+  details    String?
+  createdAt  DateTime @default(now())
 
   @@index([userId])
   @@index([resource, resourceId])

@@ -4,6 +4,8 @@ import { TrustContentSchema } from "@/lib/trust-validation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
+export const dynamic = "force-dynamic";
+
 async function isAdmin() {
   const session = await auth.api.getSession({
     headers: await headers(),

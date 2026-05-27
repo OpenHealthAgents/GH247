@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { stripe } from "@/lib/stripe";
 import prisma from "@/lib/prisma";
+import { createRazorpayOrder, getRazorpayKeyId, toRazorpayAmount } from "@/lib/razorpay";
 import { getDetectedRegion } from "@/lib/region-server";
-import { getBaseUrl } from "@/lib/region-shared";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +23,7 @@ export async function POST(req: Request) {
     const userEmail = authSession.user.email;
     const region = await getDetectedRegion();
 
-    const { planId } = await req.json();
+    const { planId, address } = await req.json();
 
 
     if (!planId) {
@@ -35,63 +34,58 @@ export async function POST(req: Request) {
       where: { id: planId },
     });
 
-    if (!plan || !plan.stripePriceId) {
-      return NextResponse.json({ error: "Invalid plan or plan not configured for Stripe" }, { status: 400 });
+    if (!plan) {
+      return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
 
     const prices = plan.prices as Record<string, number>;
     const totalPrice = prices[region.currency] || prices.USD;
+    const amount = toRazorpayAmount(totalPrice);
 
-    // Support for testing without Stripe
-    if (process.env.MOCK_CHECKOUT === "true") {
-      await prisma.order.create({
-        data: {
-          userId: userId,
-          planId: plan.id,
-          status: "paid",
-          stripeSessionId: `mock_${Date.now()}`,
-        },
-      });
-      return NextResponse.json({ 
-        url: `${getBaseUrl()}/dashboard?status=success`,
-        currency: region.currency,
-        total: totalPrice
-      });
+    if (amount < 100) {
+      return NextResponse.json({ error: "Order amount must be at least 100 paise." }, { status: 400 });
     }
 
-
-
-    const checkoutSession = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      customer_email: userEmail,
-      line_items: [
-        {
-          price: plan.stripePriceId,
-          quantity: 1,
-        },
-      ],
-      success_url: `${getBaseUrl()}/dashboard?status=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${getBaseUrl()}/dashboard?status=cancelled`,
-      metadata: {
-        userId: userId,
+    const receipt = `order_${Date.now()}`;
+    const razorpayOrder = await createRazorpayOrder({
+      amount,
+      currency: region.currency,
+      receipt,
+      notes: {
+        userId,
         planId: plan.id,
+        email: userEmail,
+        street: address?.street || "",
+        city: address?.city || "",
+        state: address?.state || "",
+        zip: address?.zip || "",
       },
     });
 
-    // Create a pending order
     await prisma.order.create({
       data: {
         userId: userId,
         planId: plan.id,
         status: "pending",
-        stripeSessionId: checkoutSession.id,
+        razorpayOrderId: razorpayOrder.id,
       },
     });
 
-
-    return NextResponse.json({ url: checkoutSession.url });
+    return NextResponse.json({
+      key: getRazorpayKeyId(),
+      orderId: razorpayOrder.id,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      name: "Wellora",
+      description: `${plan.drugType} ${plan.durationMonths}-month program`,
+      prefill: {
+        email: userEmail,
+        name: authSession.user.name || "",
+      },
+      total: totalPrice,
+    });
   } catch (error) {
-    console.error("Stripe Checkout Error:", error);
+    console.error("Razorpay Checkout Error:", error);
     const message = error instanceof Error ? error.message : "Internal Server Error";
     return NextResponse.json({ error: message }, { status: 500 });
   }

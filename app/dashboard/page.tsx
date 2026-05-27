@@ -6,6 +6,18 @@ import DashboardView from "@/components/DashboardView";
 import { getDetectedRegion } from "@/lib/region-server";
 import { Prisma } from "@prisma/client";
 
+type DashboardOrder = {
+  id: string;
+  status: string;
+  createdAt: Date;
+  plan: {
+    drugType: string;
+    tier: string;
+    prices: Prisma.JsonValue;
+    durationMonths: number;
+  };
+};
+
 export default async function DashboardPage() {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -61,7 +73,7 @@ export default async function DashboardPage() {
     },
     region,
     currentPlan,
-    orders: user.orders.map((o) => ({
+    orders: user.orders.map((o: DashboardOrder) => ({
       id: o.id,
       status: o.status,
       createdAt: o.createdAt.toISOString(),

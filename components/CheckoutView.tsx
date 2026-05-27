@@ -26,7 +26,54 @@ interface Plan {
   tier: string;
   prices: Record<string, number>;
   durationMonths: number;
-  stripePriceId: string | null;
+}
+
+interface RazorpayCheckoutResponse {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
+}
+
+interface RazorpayCheckoutOptions {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+  prefill?: {
+    name?: string;
+    email?: string;
+  };
+  handler: (response: RazorpayCheckoutResponse) => void;
+  modal?: {
+    ondismiss?: () => void;
+  };
+}
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: RazorpayCheckoutOptions) => {
+      open: () => void;
+      on: (event: "payment.failed", handler: (response: unknown) => void) => void;
+    };
+  }
+}
+
+function loadRazorpayCheckout() {
+  return new Promise<void>((resolve, reject) => {
+    if (window.Razorpay) {
+      resolve();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Unable to load Razorpay Checkout."));
+    document.body.appendChild(script);
+  });
 }
 
 export default function CheckoutView() {
@@ -98,21 +145,61 @@ export default function CheckoutView() {
 
     setIsSubmitting(true);
     try {
+      await loadRazorpayCheckout();
+
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId: selectedPlanId }),
+        body: JSON.stringify({ planId: selectedPlanId, address }),
       });
       const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error(data.error || "Failed to create checkout session");
+
+      if (!res.ok || !data.orderId) {
+        throw new Error(data.error || "Failed to create Razorpay order");
       }
+
+      if (!window.Razorpay) {
+        throw new Error("Razorpay Checkout is unavailable.");
+      }
+
+      const checkout = new window.Razorpay({
+        key: data.key,
+        amount: data.amount,
+        currency: data.currency,
+        name: data.name,
+        description: data.description,
+        order_id: data.orderId,
+        prefill: data.prefill,
+        handler: async (response) => {
+          const verifyRes = await fetch("/api/checkout/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(response),
+          });
+          const verifyData = await verifyRes.json();
+
+          if (!verifyRes.ok || !verifyData.success) {
+            alert(verifyData.error || "Payment verification failed. Please contact support.");
+            return;
+          }
+
+          window.location.href = "/dashboard?status=success";
+        },
+        modal: {
+          ondismiss: () => setIsSubmitting(false),
+        },
+      });
+
+      checkout.on("payment.failed", (response) => {
+        console.error("Razorpay payment failed", response);
+        alert("Payment failed. Please try again or use another payment method.");
+        setIsSubmitting(false);
+      });
+
+      checkout.open();
     } catch (error) {
       console.error("Checkout failed", error);
-      alert("Checkout failed. Please ensure you are logged in and your Stripe configuration is correct.");
-    } finally {
+      alert("Checkout failed. Please ensure you are logged in and your Razorpay configuration is correct.");
       setIsSubmitting(false);
     }
   };
@@ -279,14 +366,14 @@ export default function CheckoutView() {
               </form>
             </div>
 
-            {/* Step 3: Payment (Mock) */}
+            {/* Step 3: Payment */}
             <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
               <h2 className="mb-6 text-xl font-bold text-zinc-900 dark:text-zinc-100">3. Payment Information</h2>
               <div className="flex items-center gap-4 rounded-xl border border-dashed border-zinc-200 p-8 dark:border-zinc-800">
                 <CreditCard className="h-8 w-8 text-zinc-400" />
                 <div>
-                  <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Mock Payment Enabled</p>
-                  <p className="text-xs text-zinc-500">Your order will be processed in {region.currency} without a real charge for this demonstration.</p>
+                  <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Razorpay Secure Checkout</p>
+                  <p className="text-xs text-zinc-500">Payment opens in Razorpay and is verified before your order is marked paid.</p>
                 </div>
               </div>
             </div>

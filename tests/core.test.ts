@@ -14,8 +14,24 @@ const baseIntake = {
   goalWeight: 75,
   gender: "female" as const,
   dateOfBirth: "1990-01-01",
-  conditions: ["none"],
-  preferences: { preference: "affordable" },
+  healthCritical: ["none"],
+  healthExtended: ["none"],
+  opiateUse: "no" as const,
+  priorSurgery: "no" as const,
+  currentMeds: "no" as const,
+  bloodPressure: "120/80",
+  heartRate: "72",
+  medicationHistory: "none",
+  programHistory: "no" as const,
+  primaryInterest: "affordability" as const,
+  formFactor: "injection" as const,
+  hasAdditionalInfo: "no" as const,
+  personalizationGoals: ["steady_progress"],
+  firstName: "Test",
+  lastName: "User",
+  shippingState: "CA",
+  email: "test@example.com",
+  phone: "5551234567",
 };
 
 describe("eligibility engine", () => {
@@ -45,10 +61,19 @@ describe("eligibility engine", () => {
   it("routes users with severe conditions to doctor review", () => {
     const result = determineEligibility({
       ...baseIntake,
-      conditions: ["diabetes"],
+      healthExtended: ["diabetes"],
     });
 
     assert.equal(result.status, "doctor_review");
+  });
+
+  it("marks users with critical health conditions as not eligible", () => {
+    const result = determineEligibility({
+      ...baseIntake,
+      healthCritical: ["active_cancer"],
+    });
+
+    assert.equal(result.status, "not_eligible");
   });
 });
 
@@ -56,11 +81,11 @@ describe("personalization engine", () => {
   it("returns rounded BMI and a simple timeline range for weight loss goals", () => {
     const result = calculatePersonalization(90, 75, 170);
 
-    assert.deepEqual(result, {
-      bmi: 31.1,
-      weeklyWeightLossRange: { min: 0.5, max: 1 },
-      estimatedWeeksToGoal: { min: 15, max: 30 },
-    });
+    assert.equal(result.bmi, 31.1);
+    assert.deepEqual(result.weeklyWeightLossRange, { min: 1.2, max: 1.6 });
+    assert.deepEqual(result.estimatedWeeksToGoal, { min: 10, max: 13 });
+    assert.equal(result.successProbability, 85);
+    assert.ok(result.metabolicScore >= 75 && result.metabolicScore <= 95);
   });
 
   it("does not estimate negative loss when the user is already at or below goal", () => {
@@ -73,23 +98,23 @@ describe("personalization engine", () => {
 
 describe("recommendation engine", () => {
   it("defaults to the affordable semaglutide tier", () => {
-    const result = getRecommendations("affordable");
+    const result = getRecommendations({ primaryInterest: "affordability", formFactor: "injection" });
 
     assert.equal(result.primary.drugType, "semaglutide");
     assert.equal(result.primary.tier, "affordable");
-    assert.equal(result.secondary, undefined);
+    assert.equal(result.secondary?.drugType, "tirzepatide");
   });
 
-  it("recommends premium tirzepatide with an affordable fallback for strongest preference", () => {
-    const result = getRecommendations("strongest");
+  it("recommends premium tirzepatide with an affordable fallback for potency preference", () => {
+    const result = getRecommendations({ primaryInterest: "potency", formFactor: "injection" });
 
     assert.equal(result.primary.drugType, "tirzepatide");
     assert.equal(result.primary.tier, "premium");
     assert.equal(result.secondary?.drugType, "semaglutide");
   });
 
-  it("accepts the object-shaped preference payload stored by older intake data", () => {
-    const result = getRecommendations({ preference: "non_injection" });
+  it("recommends a tablet option when form factor preference is tablet", () => {
+    const result = getRecommendations({ primaryInterest: "affordability", formFactor: "tablet" });
 
     assert.equal(result.primary.drugType, "liraglutide");
     assert.equal(result.primary.tier, "standard");
@@ -102,9 +127,33 @@ describe("intake flow", () => {
     assert.equal(getNextStep(IntakeStep.WEIGHT), IntakeStep.GOAL_WEIGHT);
     assert.equal(getNextStep(IntakeStep.GOAL_WEIGHT), IntakeStep.GENDER);
     assert.equal(getNextStep(IntakeStep.GENDER), IntakeStep.DATE_OF_BIRTH);
-    assert.equal(getNextStep(IntakeStep.DATE_OF_BIRTH), IntakeStep.CONDITIONS);
-    assert.equal(getNextStep(IntakeStep.CONDITIONS), IntakeStep.PREFERENCES);
-    assert.equal(getNextStep(IntakeStep.PREFERENCES), IntakeStep.COMPLETED);
+    assert.equal(getNextStep(IntakeStep.DATE_OF_BIRTH), IntakeStep.HEALTH_CRITICAL);
+    assert.equal(getNextStep(IntakeStep.HEALTH_CRITICAL), IntakeStep.HEALTH_EXTENDED);
+    assert.equal(getNextStep(IntakeStep.HEALTH_EXTENDED), IntakeStep.OPIATE_USE);
+    assert.equal(getNextStep(IntakeStep.OPIATE_USE), IntakeStep.PRIOR_SURGERY);
+    assert.equal(getNextStep(IntakeStep.PRIOR_SURGERY), IntakeStep.CURRENT_MEDS);
+    assert.equal(getNextStep(IntakeStep.CURRENT_MEDS), IntakeStep.BLOOD_PRESSURE);
+    assert.equal(getNextStep(IntakeStep.BLOOD_PRESSURE), IntakeStep.HEART_RATE);
+    assert.equal(getNextStep(IntakeStep.HEART_RATE), IntakeStep.MEDICATION_HISTORY);
+    assert.equal(getNextStep(IntakeStep.MEDICATION_HISTORY), IntakeStep.PROGRAM_HISTORY);
+    assert.equal(getNextStep(IntakeStep.PROGRAM_HISTORY), IntakeStep.PRIMARY_INTEREST);
+    assert.equal(getNextStep(IntakeStep.PRIMARY_INTEREST), IntakeStep.FORM_FACTOR);
+    assert.equal(getNextStep(IntakeStep.FORM_FACTOR), IntakeStep.HAS_ADDITIONAL_INFO);
+    assert.equal(getNextStep(IntakeStep.HAS_ADDITIONAL_INFO, { hasAdditionalInfo: "yes" }), IntakeStep.ADDITIONAL_INFO_DETAILS);
+    assert.equal(getNextStep(IntakeStep.ADDITIONAL_INFO_DETAILS), IntakeStep.PERSONALIZATION_GOALS);
+    assert.equal(getNextStep(IntakeStep.PERSONALIZATION_GOALS), IntakeStep.FIRST_NAME);
+    assert.equal(getNextStep(IntakeStep.FIRST_NAME), IntakeStep.LAST_NAME);
+    assert.equal(getNextStep(IntakeStep.LAST_NAME), IntakeStep.SHIPPING_STATE);
+    assert.equal(getNextStep(IntakeStep.SHIPPING_STATE), IntakeStep.EMAIL);
+    assert.equal(getNextStep(IntakeStep.EMAIL), IntakeStep.PHONE);
+    assert.equal(getNextStep(IntakeStep.PHONE), IntakeStep.COMPLETED);
+  });
+
+  it("skips additional info details when the user has nothing else to add", () => {
+    assert.equal(
+      getNextStep(IntakeStep.HAS_ADDITIONAL_INFO, { hasAdditionalInfo: "no" }),
+      IntakeStep.PERSONALIZATION_GOALS
+    );
   });
 
   it("rejects impossible height, unsupported gender, and invalid birth date inputs", () => {
@@ -113,8 +162,8 @@ describe("intake flow", () => {
     assert.equal(StepValidators[IntakeStep.DATE_OF_BIRTH].safeParse("not-a-date").success, false);
   });
 
-  it("accepts checkbox medical conditions as a predefined string array", () => {
-    const result = StepValidators[IntakeStep.CONDITIONS].safeParse([
+  it("accepts checkbox health conditions as a predefined string array", () => {
+    const result = StepValidators[IntakeStep.HEALTH_EXTENDED].safeParse([
       "hypertension",
       "none",
     ]);
@@ -123,14 +172,22 @@ describe("intake flow", () => {
   });
 
   it("accepts predefined single-choice treatment preferences from the chat UI", () => {
-    const result = StepValidators[IntakeStep.PREFERENCES].safeParse("strongest");
+    const result = StepValidators[IntakeStep.PRIMARY_INTEREST].safeParse("potency");
 
     assert.equal(result.success, true);
+  });
+
+  it("validates patient identity fields collected during intake", () => {
+    assert.equal(StepValidators[IntakeStep.FIRST_NAME].safeParse("Ava").success, true);
+    assert.equal(StepValidators[IntakeStep.LAST_NAME].safeParse("Patel").success, true);
+    assert.equal(StepValidators[IntakeStep.EMAIL].safeParse("ava@example.com").success, true);
+    assert.equal(StepValidators[IntakeStep.PHONE].safeParse("5551234567").success, true);
+    assert.equal(StepValidators[IntakeStep.EMAIL].safeParse("not-an-email").success, false);
   });
 });
 
 describe("plans and trust layer", () => {
-  it("offers 1, 3, and 6 month plans for each treatment tier", () => {
+  it("offers configured plan durations for available treatment tiers", () => {
     const planKeys = AVAILABLE_PLANS.map(
       (plan) => `${plan.drugType}:${plan.tier}:${plan.durationMonths}`
     );
@@ -139,12 +196,9 @@ describe("plans and trust layer", () => {
       "semaglutide:affordable:1",
       "semaglutide:affordable:3",
       "semaglutide:affordable:6",
-      "liraglutide:standard:1",
-      "liraglutide:standard:3",
-      "liraglutide:standard:6",
+      "semaglutide:affordable:12",
       "tirzepatide:premium:1",
       "tirzepatide:premium:3",
-      "tirzepatide:premium:6",
     ]);
   });
 
