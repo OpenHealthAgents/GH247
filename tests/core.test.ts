@@ -5,6 +5,7 @@ import { calculateBMI, determineEligibility } from "../lib/eligibility";
 import { getNextStep, IntakeStep, StepValidators } from "../lib/intake-state";
 import { calculatePersonalization } from "../lib/personalization";
 import { AVAILABLE_PLANS } from "../lib/plans";
+import { getPlanPriceForRegion } from "../lib/pricing";
 import { getRecommendations } from "../lib/recommendations";
 import { TrustContentSchema } from "../lib/trust-validation";
 
@@ -220,5 +221,23 @@ describe("plans and trust layer", () => {
 
     assert.equal(testimonial.isActive, true);
     assert.equal(stat.isActive, false);
+  });
+
+  it("selects country-specific plan pricing with a US fallback", () => {
+    const prices = [
+      { country: "US", currency: "USD", amount: 299 },
+      { country: "IN", currency: "INR", amount: 24900 },
+    ];
+
+    assert.deepEqual(getPlanPriceForRegion(prices, { country: "IN" }), {
+      country: "IN",
+      currency: "INR",
+      amount: 24900,
+    });
+    assert.deepEqual(getPlanPriceForRegion(prices, { country: "CA" }), {
+      country: "US",
+      currency: "USD",
+      amount: 299,
+    });
   });
 });

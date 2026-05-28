@@ -25,6 +25,7 @@ interface Plan {
   drugType: string;
   tier: string;
   prices: Record<string, number>;
+  priceCurrencies: Record<string, string>;
   durationMonths: number;
 }
 
@@ -226,7 +227,11 @@ export default function CheckoutView() {
 
   const getPriceValue = (plan: Plan) => {
     const prices = plan.prices as Record<string, number>;
-    return prices[region.currency] || prices.USD;
+    return prices[region.country] || prices.US;
+  };
+
+  const getPriceCurrency = (plan: Plan) => {
+    return plan.priceCurrencies[region.country] || plan.priceCurrencies.US || region.currency;
   };
 
   return (
@@ -297,7 +302,7 @@ export default function CheckoutView() {
                       </div>
                       <div className="flex items-baseline gap-1">
                         <span className="text-3xl font-black text-zinc-900 dark:text-zinc-100">
-                          {formatCurrency(perMonth, region.currency, region.locale)}
+                        {formatCurrency(perMonth, getPriceCurrency(plan), region.locale)}
                         </span>
                         <span className="text-sm font-medium text-zinc-500">/mo</span>
                       </div>
@@ -308,7 +313,7 @@ export default function CheckoutView() {
                          "Maximum savings package."}
                       </p>
                       <div className="mt-2 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                        Total: {formatCurrency(totalPrice, region.currency, region.locale)}
+                        Total: {formatCurrency(totalPrice, getPriceCurrency(plan), region.locale)}
                       </div>
                     </button>
                   );
@@ -389,7 +394,7 @@ export default function CheckoutView() {
                   <div className="flex justify-between text-sm">
                     <span className="text-zinc-500 capitalize">{recommendedDrugType} Program</span>
                     <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                      {selectedPlan ? formatCurrency(getPriceValue(selectedPlan), region.currency, region.locale) : "-"}
+                      {selectedPlan ? formatCurrency(getPriceValue(selectedPlan), getPriceCurrency(selectedPlan), region.locale) : "-"}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
@@ -404,7 +409,7 @@ export default function CheckoutView() {
                     <div className="flex justify-between">
                       <span className="font-bold">Total</span>
                       <span className="text-xl font-black">
-                        {selectedPlan ? formatCurrency(getPriceValue(selectedPlan), region.currency, region.locale) : "-"}
+                        {selectedPlan ? formatCurrency(getPriceValue(selectedPlan), getPriceCurrency(selectedPlan), region.locale) : "-"}
                       </span>
                     </div>
                   </div>
@@ -445,7 +450,9 @@ export default function CheckoutView() {
                   <CheckCircle2 className="h-5 w-5 text-green-500" />
                   <div>
                     <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase">No Hidden Fees</p>
-                    <p className="text-[10px] text-zinc-500">Transparent pricing in {region.currency}.</p>
+                    <p className="text-[10px] text-zinc-500">
+                      Transparent pricing in {selectedPlan ? getPriceCurrency(selectedPlan) : region.currency}.
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">

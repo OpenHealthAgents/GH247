@@ -3,11 +3,13 @@ import Link from "next/link";
 import { CheckCircle2, ArrowRight, ShieldCheck, Zap, Star } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AVAILABLE_PLANS } from "@/lib/plans";
+import { getStartingMonthlyPriceFromRows } from "@/lib/pricing";
+import prisma from "@/lib/prisma";
 import { getDetectedRegion } from "@/lib/region-server";
 
 export default async function LandingPage() {
   const region = await getDetectedRegion();
-  const startingMonthlyPrice = getStartingMonthlyPrice(region.currency);
+  const startingMonthlyPrice = await getStartingMonthlyPrice(region.country);
   const formattedStartingPrice = formatWholeCurrency(
     startingMonthlyPrice,
     region.currency,
@@ -140,10 +142,24 @@ function Stat({ value, label }: { value: string; label: string }) {
   );
 }
 
-function getStartingMonthlyPrice(currency: string) {
+async function getStartingMonthlyPrice(country: string) {
+  try {
+    const plans = await prisma.plan.findMany({
+      where: { isActive: true },
+      include: { prices: true },
+    });
+    const price = getStartingMonthlyPriceFromRows(plans, { country });
+
+    if (price !== null) {
+      return price;
+    }
+  } catch (error) {
+    console.error("Failed to load database pricing for landing page:", error);
+  }
+
   return Math.min(
     ...AVAILABLE_PLANS.map((plan) => {
-      const total = plan.prices[currency] ?? plan.prices.USD;
+      const total = plan.prices[country] ?? plan.prices.US;
       return total / plan.durationMonths;
     })
   );

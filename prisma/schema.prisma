@@ -127,11 +127,25 @@ model Plan {
   productId      String
   drugType       String
   tier           String
-  prices         Json
   durationMonths Int
   isActive       Boolean @default(true)
   orders         Order[]
+  prices         PlanPrice[]
   product        Product @relation(fields: [productId], references: [id])
+}
+
+model PlanPrice {
+  id        String   @id @default(cuid())
+  planId    String
+  country   String
+  currency  String
+  amount    Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  plan      Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, country])
+  @@index([country])
 }
 
 model Order {

@@ -56,7 +56,13 @@ async function main() {
       productId: "prod-semaglutide",
       drugType: "semaglutide", 
       tier: "affordable", 
-      prices: { USD: 299, GBP: 229, EUR: 279, INR: 24900 }, 
+      countryPrices: [
+        { country: "US", currency: "USD", amount: 299 },
+        { country: "GB", currency: "GBP", amount: 229 },
+        { country: "DE", currency: "EUR", amount: 279 },
+        { country: "FR", currency: "EUR", amount: 279 },
+        { country: "IN", currency: "INR", amount: 24900 },
+      ],
       durationMonths: 1
     },
     { 
@@ -64,7 +70,13 @@ async function main() {
       productId: "prod-semaglutide",
       drugType: "semaglutide", 
       tier: "affordable", 
-      prices: { USD: 747, GBP: 573, EUR: 699, INR: 61900 }, 
+      countryPrices: [
+        { country: "US", currency: "USD", amount: 747 },
+        { country: "GB", currency: "GBP", amount: 573 },
+        { country: "DE", currency: "EUR", amount: 699 },
+        { country: "FR", currency: "EUR", amount: 699 },
+        { country: "IN", currency: "INR", amount: 61900 },
+      ],
       durationMonths: 3
     },
     { 
@@ -72,7 +84,13 @@ async function main() {
       productId: "prod-semaglutide",
       drugType: "semaglutide", 
       tier: "affordable", 
-      prices: { USD: 1314, GBP: 1008, EUR: 1230, INR: 109000 }, 
+      countryPrices: [
+        { country: "US", currency: "USD", amount: 1314 },
+        { country: "GB", currency: "GBP", amount: 1008 },
+        { country: "DE", currency: "EUR", amount: 1230 },
+        { country: "FR", currency: "EUR", amount: 1230 },
+        { country: "IN", currency: "INR", amount: 109000 },
+      ],
       durationMonths: 6
     },
     { 
@@ -80,7 +98,13 @@ async function main() {
       productId: "prod-semaglutide",
       drugType: "semaglutide", 
       tier: "affordable", 
-      prices: { USD: 2148, GBP: 1644, EUR: 2010, INR: 178000 }, 
+      countryPrices: [
+        { country: "US", currency: "USD", amount: 2148 },
+        { country: "GB", currency: "GBP", amount: 1644 },
+        { country: "DE", currency: "EUR", amount: 2010 },
+        { country: "FR", currency: "EUR", amount: 2010 },
+        { country: "IN", currency: "INR", amount: 178000 },
+      ],
       durationMonths: 12
     },
     
@@ -90,7 +114,13 @@ async function main() {
       productId: "prod-tirzepatide",
       drugType: "tirzepatide", 
       tier: "premium", 
-      prices: { USD: 399, GBP: 309, EUR: 379, INR: 33100 }, 
+      countryPrices: [
+        { country: "US", currency: "USD", amount: 399 },
+        { country: "GB", currency: "GBP", amount: 309 },
+        { country: "DE", currency: "EUR", amount: 379 },
+        { country: "FR", currency: "EUR", amount: 379 },
+        { country: "IN", currency: "INR", amount: 33100 },
+      ],
       durationMonths: 1
     },
     { 
@@ -98,7 +128,13 @@ async function main() {
       productId: "prod-tirzepatide",
       drugType: "tirzepatide", 
       tier: "premium", 
-      prices: { USD: 897, GBP: 690, EUR: 840, INR: 74500 }, 
+      countryPrices: [
+        { country: "US", currency: "USD", amount: 897 },
+        { country: "GB", currency: "GBP", amount: 690 },
+        { country: "DE", currency: "EUR", amount: 840 },
+        { country: "FR", currency: "EUR", amount: 840 },
+        { country: "IN", currency: "INR", amount: 74500 },
+      ],
       durationMonths: 3
     },
 
@@ -108,18 +144,42 @@ async function main() {
       productId: "prod-liraglutide",
       drugType: "liraglutide", 
       tier: "standard", 
-      prices: { USD: 349, GBP: 269, EUR: 329, INR: 29000 }, 
+      countryPrices: [
+        { country: "US", currency: "USD", amount: 349 },
+        { country: "GB", currency: "GBP", amount: 269 },
+        { country: "DE", currency: "EUR", amount: 329 },
+        { country: "FR", currency: "EUR", amount: 329 },
+        { country: "IN", currency: "INR", amount: 29000 },
+      ],
       durationMonths: 1
     }
   ];
 
   console.log("Upserting plans...");
   for (const plan of plans) {
+    const { countryPrices, ...planData } = plan;
+
     await prisma.plan.upsert({
-      where: { id: plan.id },
-      update: plan,
-      create: plan as any,
+      where: { id: planData.id },
+      update: planData,
+      create: planData,
     });
+
+    for (const price of countryPrices) {
+      await prisma.planPrice.upsert({
+        where: {
+          planId_country: {
+            planId: planData.id,
+            country: price.country,
+          },
+        },
+        update: price,
+        create: {
+          ...price,
+          planId: planData.id,
+        },
+      });
+    }
   }
 
   // 3. Seed initial trust content

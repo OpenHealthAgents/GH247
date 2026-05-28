@@ -16,6 +16,7 @@ interface DashboardData {
     drugType: string;
     tier: string;
     price: number;
+    currency: string;
     durationMonths: number;
     status: string;
     createdAt: string;
@@ -28,6 +29,7 @@ interface DashboardData {
       drugType: string;
       tier: string;
       price: number;
+      currency: string;
       durationMonths: number;
     };
   }>;
@@ -113,7 +115,7 @@ export default function DashboardView({ data }: { data: DashboardData }) {
                       </div>
                       <div className="flex items-center gap-4">
                         <span className="text-sm font-bold">
-                          {formatCurrency(order.plan.price, region.currency, region.locale)}
+                          {formatCurrency(order.plan.price, order.plan.currency, region.locale)}
                         </span>
                         <ChevronRight className="h-4 w-4 text-zinc-300" />
                       </div>

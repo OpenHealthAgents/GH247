@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import DashboardView from "@/components/DashboardView";
 import { getDetectedRegion } from "@/lib/region-server";
-import { Prisma } from "@prisma/client";
+import { getPlanPriceForRegion, PlanPriceRow } from "@/lib/pricing";
 
 type DashboardOrder = {
   id: string;
@@ -13,7 +13,7 @@ type DashboardOrder = {
   plan: {
     drugType: string;
     tier: string;
-    prices: Prisma.JsonValue;
+    prices: PlanPriceRow[];
     durationMonths: number;
   };
 };
@@ -34,7 +34,11 @@ export default async function DashboardPage() {
     include: {
       orders: {
         include: {
-          plan: true,
+          plan: {
+            include: {
+              prices: true,
+            },
+          },
         },
         orderBy: {
           createdAt: "desc",
@@ -48,18 +52,19 @@ export default async function DashboardPage() {
     redirect("/");
   }
 
-  const getPriceValue = (pricesJson: Prisma.JsonValue) => {
-    const prices = pricesJson as Record<string, number>;
-    return prices[region.currency] || prices.USD;
+  const getPriceValue = (prices: PlanPriceRow[]) => {
+    return getPlanPriceForRegion(prices, region);
   };
 
   // Current plan is the most recent order
   const latestOrder = user.orders[0];
+  const latestOrderPrice = latestOrder ? getPriceValue(latestOrder.plan.prices) : null;
   const currentPlan = latestOrder
     ? {
         drugType: latestOrder.plan.drugType,
         tier: latestOrder.plan.tier,
-        price: getPriceValue(latestOrder.plan.prices),
+        price: latestOrderPrice!.amount,
+        currency: latestOrderPrice!.currency,
         durationMonths: latestOrder.plan.durationMonths,
         status: latestOrder.status,
         createdAt: latestOrder.createdAt.toISOString(),
@@ -73,17 +78,22 @@ export default async function DashboardPage() {
     },
     region,
     currentPlan,
-    orders: user.orders.map((o: DashboardOrder) => ({
-      id: o.id,
-      status: o.status,
-      createdAt: o.createdAt.toISOString(),
-      plan: {
-        drugType: o.plan.drugType,
-        tier: o.plan.tier,
-        price: getPriceValue(o.plan.prices),
-        durationMonths: o.plan.durationMonths,
-      },
-    })),
+    orders: user.orders.map((o: DashboardOrder) => {
+      const price = getPriceValue(o.plan.prices);
+
+      return {
+        id: o.id,
+        status: o.status,
+        createdAt: o.createdAt.toISOString(),
+        plan: {
+          drugType: o.plan.drugType,
+          tier: o.plan.tier,
+          price: price.amount,
+          currency: price.currency,
+          durationMonths: o.plan.durationMonths,
+        },
+      };
+    }),
     intake: user.intake
       ? {
           weight: user.intake.weight,

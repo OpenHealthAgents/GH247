@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
 import { createRazorpayOrder, getRazorpayKeyId, toRazorpayAmount } from "@/lib/razorpay";
 import { getDetectedRegion } from "@/lib/region-server";
+import { getPlanPriceForRegion } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
 
@@ -32,14 +33,17 @@ export async function POST(req: Request) {
 
     const plan = await prisma.plan.findUnique({
       where: { id: planId },
+      include: {
+        prices: true,
+      },
     });
 
     if (!plan) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
 
-    const prices = plan.prices as Record<string, number>;
-    const totalPrice = prices[region.currency] || prices.USD;
+    const price = getPlanPriceForRegion(plan.prices, region);
+    const totalPrice = price.amount;
     const amount = toRazorpayAmount(totalPrice);
 
     if (amount < 100) {
@@ -49,12 +53,14 @@ export async function POST(req: Request) {
     const receipt = `order_${Date.now()}`;
     const razorpayOrder = await createRazorpayOrder({
       amount,
-      currency: region.currency,
+      currency: price.currency,
       receipt,
       notes: {
         userId,
         planId: plan.id,
         email: userEmail,
+        country: price.country,
+        currency: price.currency,
         street: address?.street || "",
         city: address?.city || "",
         state: address?.state || "",
