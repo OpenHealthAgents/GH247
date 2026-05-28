@@ -2,8 +2,18 @@ import React from "react";
 import Link from "next/link";
 import { CheckCircle2, ArrowRight, ShieldCheck, Zap, Star } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AVAILABLE_PLANS } from "@/lib/plans";
+import { getDetectedRegion } from "@/lib/region-server";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const region = await getDetectedRegion();
+  const startingMonthlyPrice = getStartingMonthlyPrice(region.currency);
+  const formattedStartingPrice = formatWholeCurrency(
+    startingMonthlyPrice,
+    region.currency,
+    region.locale
+  );
+
   return (
     <div className="min-h-screen bg-white text-zinc-900 dark:bg-black dark:text-zinc-100">
       {/* Navigation */}
@@ -50,7 +60,7 @@ export default function LandingPage() {
               <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Link>
             <p className="text-sm font-medium text-zinc-500">
-              Starts at just <span className="text-zinc-900 dark:text-zinc-100">$179/mo</span>
+              Starts at just <span className="text-zinc-900 dark:text-zinc-100">{formattedStartingPrice}/mo</span>
             </p>
           </div>
           
@@ -128,4 +138,25 @@ function Stat({ value, label }: { value: string; label: string }) {
       <p className="mt-1 text-sm text-zinc-500">{label}</p>
     </div>
   );
+}
+
+function getStartingMonthlyPrice(currency: string) {
+  return Math.min(
+    ...AVAILABLE_PLANS.map((plan) => {
+      const total = plan.prices[currency] ?? plan.prices.USD;
+      return total / plan.durationMonths;
+    })
+  );
+}
+
+function formatWholeCurrency(amount: number, currency: string, locale: string) {
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    }).format(Math.ceil(amount));
+  } catch {
+    return `${currency} ${Math.ceil(amount)}`;
+  }
 }
