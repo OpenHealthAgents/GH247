@@ -111,15 +111,17 @@ model Eligibility {
 }
 
 model Product {
-  id          String   @id @default(cuid())
-  name        String
-  description String
-  image       String?
-  formFactor  String
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  plans       Plan[]
+  id               String   @id @default(cuid())
+  name             String
+  activeIngredient String?
+  manufacturer     String?
+  description      String
+  image            String?
+  formFactor       String
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  plans            Plan[]
 }
 
 model Plan {
