@@ -98,15 +98,10 @@ export async function POST(req: NextRequest) {
 
       const prisma = (await import("@/lib/prisma")).default;
 
-      // Clean up pending intake as it is now complete
-      try {
-        await prisma.pendingIntake.delete({
-          where: { sessionId },
-        });
-        console.log("Deleted completed pending intake for session:", sessionId);
-      } catch (deleteError) {
-        console.warn("Failed to delete pending intake (likely already gone):", deleteError);
-      }
+      await prisma.pendingIntake.update({
+        where: { sessionId },
+        data: { currentStep: IntakeStep.COMPLETED },
+      });
 
       try {
         const userEmail = userSession?.user.email || "test@wellora.com";
@@ -249,5 +244,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
-
 

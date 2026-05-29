@@ -7,6 +7,8 @@ import { logAudit } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { getDetectedRegion } from "@/lib/region-server";
+import prisma from "@/lib/prisma";
+import { intakeDataFromStoredIntake } from "@/lib/intake-results";
 
 export const dynamic = "force-dynamic";
 
@@ -14,11 +16,19 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const sessionId = await getIntakeSessionId();
   const pending = await getPendingIntake(sessionId);
-  const data = (pending?.data as unknown as Partial<IntakeData>) || {};
 
   const session = await auth.api.getSession({
     headers: await headers(),
   });
+
+  const storedIntake = !pending && session?.user.id
+    ? await prisma.intake.findUnique({ where: { userId: session.user.id } })
+    : null;
+  const data = pending
+    ? (pending.data as unknown as Partial<IntakeData>)
+    : storedIntake
+      ? intakeDataFromStoredIntake(storedIntake)
+      : {};
 
   const region = await getDetectedRegion();
 
