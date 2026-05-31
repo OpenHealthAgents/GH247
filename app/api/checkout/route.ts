@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
 import { createRazorpayOrder, getRazorpayKeyId, isRazorpayConfigured, toRazorpayAmount } from "@/lib/razorpay";
 import { getDetectedRegion } from "@/lib/region-server";
-import { getConsultationFee, getOrderTotal, getPlanPriceForRegion, getShippingFee } from "@/lib/pricing";
+import { getBillablePlanPriceForRegion, getConsultationFee, getDoseMultiplierForFormFactor, getOrderTotal, getShippingFee } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +40,7 @@ export async function POST(req: Request) {
     const plan = await prisma.plan.findUnique({
       where: { id: planId },
       include: {
+        product: true,
         prices: true,
       },
     });
@@ -48,7 +49,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
 
-    const price = getPlanPriceForRegion(plan.prices, region);
+    const price = getBillablePlanPriceForRegion(plan.prices, region, plan.product.formFactor);
+    const doseMultiplier = getDoseMultiplierForFormFactor(plan.product.formFactor);
 
     if (!RAZORPAY_SUPPORTED_CURRENCIES.has(price.currency)) {
       return NextResponse.json({
@@ -76,6 +78,7 @@ export async function POST(req: Request) {
         email: userEmail,
         country: price.country,
         currency: price.currency,
+        doseMultiplier: String(doseMultiplier),
         consultationFee: String(consultationFee),
         shippingFee: String(shippingFee),
         street: address?.street || "",
@@ -106,6 +109,8 @@ export async function POST(req: Request) {
         name: authSession.user.name || "",
       },
       total: totalPrice,
+      medicationTotal: price.amount,
+      doseMultiplier,
       consultationFee,
       shippingFee,
     });

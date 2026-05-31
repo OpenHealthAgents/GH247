@@ -5,7 +5,14 @@ import { calculateBMI, determineEligibility } from "../lib/eligibility";
 import { getNextStep, IntakeStep, StepValidators } from "../lib/intake-state";
 import { calculatePersonalization } from "../lib/personalization";
 import { AVAILABLE_PLANS } from "../lib/plans";
-import { getConsultationFee, getOrderTotal, getPlanPriceForRegion, getShippingFee } from "../lib/pricing";
+import {
+  getBillablePlanPriceForRegion,
+  getConsultationFee,
+  getDoseMultiplierForFormFactor,
+  getOrderTotal,
+  getPlanPriceForRegion,
+  getShippingFee,
+} from "../lib/pricing";
 import { getRecommendations } from "../lib/recommendations";
 import { TrustContentSchema } from "../lib/trust-validation";
 
@@ -257,5 +264,17 @@ describe("plans and trust layer", () => {
     assert.equal(getConsultationFee("USD"), 0);
     assert.equal(getShippingFee("USD"), 0);
     assert.equal(getOrderTotal(24900, "INR"), 25300);
+  });
+
+  it("bills weekly injections as four doses per month", () => {
+    const prices = [{ country: "IN", currency: "INR", amount: 742 }];
+
+    assert.equal(getDoseMultiplierForFormFactor("pre-filled-pen"), 4);
+    assert.equal(getDoseMultiplierForFormFactor("tablet"), 1);
+    assert.deepEqual(getBillablePlanPriceForRegion(prices, { country: "IN" }, "injection"), {
+      country: "IN",
+      currency: "INR",
+      amount: 2968,
+    });
   });
 });

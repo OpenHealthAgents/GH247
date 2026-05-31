@@ -36,6 +36,37 @@ export function getCountryCurrencyMap(prices: PlanPriceRow[]) {
   }, {});
 }
 
+export function getDoseMultiplierForFormFactor(formFactor: string) {
+  const normalized = formFactor.toLowerCase();
+
+  if (
+    normalized.includes("injection") ||
+    normalized.includes("injectable") ||
+    normalized.includes("pen")
+  ) {
+    return 4;
+  }
+
+  return 1;
+}
+
+export function getBillablePlanPrices(prices: PlanPriceRow[], formFactor: string) {
+  const doseMultiplier = getDoseMultiplierForFormFactor(formFactor);
+
+  return prices.map((price) => ({
+    ...price,
+    amount: price.amount * doseMultiplier,
+  }));
+}
+
+export function getBillablePlanPriceForRegion(
+  prices: PlanPriceRow[],
+  region: Pick<RegionConfig, "country">,
+  formFactor: string
+) {
+  return getPlanPriceForRegion(getBillablePlanPrices(prices, formFactor), region);
+}
+
 export function getStartingMonthlyPriceFromRows<
   T extends { durationMonths: number; prices: PlanPriceRow[] }
 >(plans: T[], region: Pick<RegionConfig, "country">) {

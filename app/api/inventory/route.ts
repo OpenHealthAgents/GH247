@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getDetectedRegion } from "@/lib/region-server";
-import { getCountryCurrencyMap, getCountryPriceMap } from "@/lib/pricing";
+import { getBillablePlanPrices, getCountryCurrencyMap, getCountryPriceMap } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
 
@@ -24,14 +24,22 @@ export async function GET() {
     });
 
     return NextResponse.json({
-      products: products.map((product) => ({
-        ...product,
-        plans: product.plans.map((plan) => ({
-          ...plan,
-          priceCurrencies: getCountryCurrencyMap(plan.prices),
-          prices: getCountryPriceMap(plan.prices),
-        })),
-      })),
+      products: products.map((product) => {
+        const doseAdjustedPlans = product.plans.map((plan) => {
+          const billablePrices = getBillablePlanPrices(plan.prices, product.formFactor);
+
+          return {
+            ...plan,
+            priceCurrencies: getCountryCurrencyMap(billablePrices),
+            prices: getCountryPriceMap(billablePrices),
+          };
+        });
+
+        return {
+          ...product,
+          plans: doseAdjustedPlans,
+        };
+      }),
       region,
     });
   } catch (error) {
