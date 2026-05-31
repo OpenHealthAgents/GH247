@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { CheckCircle2, ArrowRight, ShieldCheck, Zap, Star } from "lucide-react";
+import { CheckCircle2, ArrowRight, ShieldCheck, Zap, Star, Phone } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { WelloraLogo } from "@/components/WelloraLogo";
 
@@ -53,6 +53,13 @@ export default async function LandingPage() {
             <p className="text-sm font-medium text-zinc-500">
               Lowest medication option from <span className="text-zinc-900 dark:text-zinc-100">₹3,956/mo</span>
             </p>
+            <a
+              href="tel:+919346317790"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-700 underline-offset-4 hover:underline dark:text-zinc-300"
+            >
+              <Phone className="h-4 w-4" />
+              Prefer to talk? Call 9346317790
+            </a>
           </div>
           
           <div className="mt-16 grid grid-cols-2 gap-8 border-t border-zinc-100 pt-16 dark:border-zinc-900 sm:grid-cols-4">
