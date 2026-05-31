@@ -13,6 +13,14 @@ import { StatsBanner } from "@/components/trust/StatsBanner";
 import { FALLBACK_TRUST_CONTENT, TrustContent } from "@/lib/trust-data";
 import { formatCurrency } from "@/lib/region-shared";
 
+type RecommendationPayload = RecommendationResult & {
+  region: RegionConfig;
+  preferences?: {
+    formFactor?: "injection" | "tablet";
+    primaryInterest?: "affordability" | "potency";
+  };
+};
+
 interface Product {
   id: string;
   name: string;
@@ -39,7 +47,7 @@ export interface ResultsViewProps {
 
 export default function ResultsView({ onCheckout }: ResultsViewProps) {
   const [personalization, setPersonalization] = useState<(PersonalizationResult & { region: RegionConfig }) | null>(null);
-  const [recommendations, setRecommendations] = useState<(RecommendationResult & { region: RegionConfig }) | null>(null);
+  const [recommendations, setRecommendations] = useState<RecommendationPayload | null>(null);
   const [inventory, setInventory] = useState<Product[]>([]);
   const [trustContent, setTrustContent] = useState<TrustContent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,7 +112,12 @@ export default function ResultsView({ onCheckout }: ResultsViewProps) {
   }
 
   const { primary, secondary } = recommendations;
-  const comparableProducts = getComparableProducts(inventory, primary.drugType, secondary?.drugType);
+  const comparableProducts = getComparableProducts(
+    inventory,
+    primary.drugType,
+    recommendations.preferences?.formFactor,
+    secondary?.drugType
+  );
   const activeStats = trustContent.filter(t => t.type === "stat");
   const activeTestimonials = trustContent.filter(t => t.type === "testimonial");
   const fallbackStats = FALLBACK_TRUST_CONTENT.filter(t => t.type === "stat");
@@ -384,7 +397,12 @@ function ProductOptionCard({
   );
 }
 
-function getComparableProducts(products: Product[], primaryDrugType: string, secondaryDrugType?: string) {
+function getComparableProducts(
+  products: Product[],
+  primaryDrugType: string,
+  preferredFormFactor?: "injection" | "tablet",
+  secondaryDrugType?: string
+) {
   const primaryMatches = products.filter((product) => productMatchesDrugType(product, primaryDrugType));
   const secondaryMatches = secondaryDrugType
     ? products.filter((product) => productMatchesDrugType(product, secondaryDrugType))
@@ -392,12 +410,25 @@ function getComparableProducts(products: Product[], primaryDrugType: string, sec
   const seen = new Set<string>();
 
   return [...primaryMatches, ...secondaryMatches]
+    .filter((product) => productMatchesFormFactor(product, preferredFormFactor))
     .filter((product) => {
       if (seen.has(product.id) || !product.plans.some(hasPrice)) return false;
       seen.add(product.id);
       return true;
     })
     .slice(0, 4);
+}
+
+function productMatchesFormFactor(product: Product, preferredFormFactor?: "injection" | "tablet") {
+  if (!preferredFormFactor) return true;
+
+  const formFactor = product.formFactor.toLowerCase();
+
+  if (preferredFormFactor === "tablet") {
+    return formFactor.includes("tablet") || formFactor.includes("capsule");
+  }
+
+  return formFactor.includes("injection") || formFactor.includes("pen") || formFactor.includes("injectable");
 }
 
 function productMatchesDrugType(product: Product, drugType: string) {

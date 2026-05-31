@@ -47,6 +47,10 @@ export async function GET() {
 
   return NextResponse.json({
     ...result,
+    preferences: {
+      formFactor: data.formFactor,
+      primaryInterest: data.primaryInterest,
+    },
     region,
   });
 }

@@ -3,20 +3,8 @@ import Link from "next/link";
 import { CheckCircle2, ArrowRight, ShieldCheck, Zap, Star } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { WelloraLogo } from "@/components/WelloraLogo";
-import { AVAILABLE_PLANS } from "@/lib/plans";
-import { getStartingMonthlyPriceFromRows } from "@/lib/pricing";
-import prisma from "@/lib/prisma";
-import { getDetectedRegion } from "@/lib/region-server";
 
 export default async function LandingPage() {
-  const region = await getDetectedRegion();
-  const startingMonthlyPrice = await getStartingMonthlyPrice(region.country);
-  const formattedStartingPrice = formatWholeCurrency(
-    startingMonthlyPrice,
-    region.currency,
-    region.locale
-  );
-
   return (
     <div className="min-h-screen bg-white text-zinc-900 dark:bg-black dark:text-zinc-100">
       {/* Navigation */}
@@ -54,7 +42,7 @@ export default async function LandingPage() {
           <p className="mb-10 text-xl text-zinc-600 dark:text-zinc-400 sm:text-2xl">
             Fat loss made easy with personalized care, doctor-prescribed GLP-1 medications, and 1:1 support.
           </p>
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="flex flex-col items-center justify-center gap-3">
             <Link
               href="/intake"
               className="group flex w-full items-center justify-center gap-2 rounded-full bg-zinc-900 px-8 py-4 text-lg font-bold text-white transition-all hover:bg-zinc-800 sm:w-auto dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
@@ -63,8 +51,7 @@ export default async function LandingPage() {
               <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Link>
             <p className="text-sm font-medium text-zinc-500">
-              Lowest medication option from{" "}
-              <span className="text-zinc-900 dark:text-zinc-100">{formattedStartingPrice}/mo</span>
+              Lowest medication option from <span className="text-zinc-900 dark:text-zinc-100">₹742/mo</span>
             </p>
           </div>
           
@@ -142,39 +129,4 @@ function Stat({ value, label }: { value: string; label: string }) {
       <p className="mt-1 text-sm text-zinc-500">{label}</p>
     </div>
   );
-}
-
-async function getStartingMonthlyPrice(country: string) {
-  try {
-    const plans = await prisma.plan.findMany({
-      where: { isActive: true },
-      include: { prices: true },
-    });
-    const price = getStartingMonthlyPriceFromRows(plans, { country });
-
-    if (price !== null) {
-      return price;
-    }
-  } catch (error) {
-    console.error("Failed to load database pricing for landing page:", error);
-  }
-
-  return Math.min(
-    ...AVAILABLE_PLANS.map((plan) => {
-      const total = plan.prices[country] ?? plan.prices.US;
-      return total / plan.durationMonths;
-    })
-  );
-}
-
-function formatWholeCurrency(amount: number, currency: string, locale: string) {
-  try {
-    return new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency,
-      maximumFractionDigits: 0,
-    }).format(Math.ceil(amount));
-  } catch {
-    return `${currency} ${Math.ceil(amount)}`;
-  }
 }
