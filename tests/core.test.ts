@@ -5,7 +5,7 @@ import { calculateBMI, determineEligibility } from "../lib/eligibility";
 import { getNextStep, IntakeStep, StepValidators } from "../lib/intake-state";
 import { calculatePersonalization } from "../lib/personalization";
 import { AVAILABLE_PLANS } from "../lib/plans";
-import { getPlanPriceForRegion } from "../lib/pricing";
+import { getConsultationFee, getOrderTotal, getPlanPriceForRegion, getShippingFee } from "../lib/pricing";
 import { getRecommendations } from "../lib/recommendations";
 import { TrustContentSchema } from "../lib/trust-validation";
 
@@ -249,5 +249,13 @@ describe("plans and trust layer", () => {
       currency: "USD",
       amount: 299,
     });
+  });
+
+  it("adds India consultation and shipping fees to INR order totals", () => {
+    assert.equal(getConsultationFee("INR"), 300);
+    assert.equal(getShippingFee("INR"), 100);
+    assert.equal(getConsultationFee("USD"), 0);
+    assert.equal(getShippingFee("USD"), 0);
+    assert.equal(getOrderTotal(24900, "INR"), 25300);
   });
 });

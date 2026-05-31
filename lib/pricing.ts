@@ -50,3 +50,15 @@ export function getStartingMonthlyPriceFromRows<
     })
   );
 }
+
+export function getConsultationFee(currency: string) {
+  return currency === "INR" ? 300 : 0;
+}
+
+export function getShippingFee(currency: string) {
+  return currency === "INR" ? 100 : 0;
+}
+
+export function getOrderTotal(planAmount: number, currency: string) {
+  return planAmount + getConsultationFee(currency) + getShippingFee(currency);
+}

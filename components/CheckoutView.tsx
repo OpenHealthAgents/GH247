@@ -8,6 +8,7 @@ import { TrustContent } from "@/lib/trust-data";
 import { StatsBanner } from "@/components/trust/StatsBanner";
 import { TestimonialCard } from "@/components/trust/TestimonialCard";
 import { RegionConfig } from "@/lib/region-config";
+import { getConsultationFee, getOrderTotal, getShippingFee } from "@/lib/pricing";
 import { formatCurrency } from "@/lib/region-shared";
 
 interface Product {
@@ -230,6 +231,12 @@ export default function CheckoutView() {
     return getPlanCurrency(plan, region.country, region.currency);
   };
 
+  const selectedPlanAmount = selectedPlan ? getPriceValue(selectedPlan) : null;
+  const selectedCurrency = selectedPlan ? getPriceCurrency(selectedPlan) : region.currency;
+  const consultationFee = getConsultationFee(selectedCurrency);
+  const shippingFee = getShippingFee(selectedCurrency);
+  const orderTotal = selectedPlanAmount ? getOrderTotal(selectedPlanAmount, selectedCurrency) : null;
+
   return (
     <div className="min-h-screen bg-zinc-50 py-12 px-6 dark:bg-black">
       <div className="mx-auto max-w-5xl">
@@ -383,22 +390,26 @@ export default function CheckoutView() {
                   <div className="flex justify-between text-sm">
                     <span className="text-zinc-500 capitalize">{recommendedDrugType} Program</span>
                     <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                      {selectedPlan && getPriceValue(selectedPlan) ? formatCurrency(getPriceValue(selectedPlan), getPriceCurrency(selectedPlan), region.locale) : "-"}
+                      {selectedPlanAmount ? formatCurrency(selectedPlanAmount, selectedCurrency, region.locale) : "-"}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-zinc-500">Medical Consultation</span>
-                    <span className="font-medium text-green-600">FREE</span>
+                    <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                      {consultationFee > 0 ? formatCurrency(consultationFee, selectedCurrency, region.locale) : "FREE"}
+                    </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-zinc-500">Shipping</span>
-                    <span className="font-medium text-green-600">FREE</span>
+                    <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                      {shippingFee > 0 ? formatCurrency(shippingFee, selectedCurrency, region.locale) : "FREE"}
+                    </span>
                   </div>
                   <div className="border-t border-zinc-100 pt-4 dark:border-zinc-800">
                     <div className="flex justify-between">
                       <span className="font-bold">Total</span>
                       <span className="text-xl font-black">
-                        {selectedPlan && getPriceValue(selectedPlan) ? formatCurrency(getPriceValue(selectedPlan), getPriceCurrency(selectedPlan), region.locale) : "-"}
+                        {orderTotal ? formatCurrency(orderTotal, selectedCurrency, region.locale) : "-"}
                       </span>
                     </div>
                   </div>

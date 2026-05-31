@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
 import { createRazorpayOrder, getRazorpayKeyId, toRazorpayAmount } from "@/lib/razorpay";
 import { getDetectedRegion } from "@/lib/region-server";
-import { getPlanPriceForRegion } from "@/lib/pricing";
+import { getConsultationFee, getOrderTotal, getPlanPriceForRegion, getShippingFee } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +43,9 @@ export async function POST(req: Request) {
     }
 
     const price = getPlanPriceForRegion(plan.prices, region);
-    const totalPrice = price.amount;
+    const consultationFee = getConsultationFee(price.currency);
+    const shippingFee = getShippingFee(price.currency);
+    const totalPrice = getOrderTotal(price.amount, price.currency);
     const amount = toRazorpayAmount(totalPrice);
 
     if (amount < 100) {
@@ -61,6 +63,8 @@ export async function POST(req: Request) {
         email: userEmail,
         country: price.country,
         currency: price.currency,
+        consultationFee: String(consultationFee),
+        shippingFee: String(shippingFee),
         street: address?.street || "",
         city: address?.city || "",
         state: address?.state || "",
@@ -89,6 +93,8 @@ export async function POST(req: Request) {
         name: authSession.user.name || "",
       },
       total: totalPrice,
+      consultationFee,
+      shippingFee,
     });
   } catch (error) {
     console.error("Razorpay Checkout Error:", error);
