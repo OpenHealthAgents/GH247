@@ -2,11 +2,13 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
-import { createRazorpayOrder, getRazorpayKeyId, toRazorpayAmount } from "@/lib/razorpay";
+import { createRazorpayOrder, getRazorpayKeyId, isRazorpayConfigured, toRazorpayAmount } from "@/lib/razorpay";
 import { getDetectedRegion } from "@/lib/region-server";
 import { getConsultationFee, getOrderTotal, getPlanPriceForRegion, getShippingFee } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
+
+const RAZORPAY_SUPPORTED_CURRENCIES = new Set(["INR"]);
 
 
 
@@ -18,6 +20,10 @@ export async function POST(req: Request) {
 
     if (!authSession) {
       return NextResponse.json({ error: "Unauthorized. Please log in to complete your order." }, { status: 401 });
+    }
+
+    if (!isRazorpayConfigured()) {
+      return NextResponse.json({ error: "Razorpay is not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET." }, { status: 500 });
     }
 
     const userId = authSession.user.id;
@@ -43,6 +49,13 @@ export async function POST(req: Request) {
     }
 
     const price = getPlanPriceForRegion(plan.prices, region);
+
+    if (!RAZORPAY_SUPPORTED_CURRENCIES.has(price.currency)) {
+      return NextResponse.json({
+        error: `Razorpay checkout currently supports INR payments only. Selected plan currency is ${price.currency}.`,
+      }, { status: 400 });
+    }
+
     const consultationFee = getConsultationFee(price.currency);
     const shippingFee = getShippingFee(price.currency);
     const totalPrice = getOrderTotal(price.amount, price.currency);

@@ -34,6 +34,10 @@ export function toRazorpayAmount(amount: number) {
   return Math.round(amount * 100);
 }
 
+export function isRazorpayConfigured() {
+  return Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
+}
+
 export async function createRazorpayOrder(input: RazorpayOrderInput): Promise<RazorpayOrder> {
   const { keyId, keySecret } = getRazorpayCredentials();
   const auth = Buffer.from(`${keyId}:${keySecret}`).toString("base64");

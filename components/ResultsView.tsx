@@ -115,6 +115,7 @@ export default function ResultsView({ onCheckout }: ResultsViewProps) {
   const comparableProducts = getComparableProducts(
     inventory,
     primary.drugType,
+    recommendations.region.country,
     recommendations.preferences?.formFactor,
     secondary?.drugType
   );
@@ -400,6 +401,7 @@ function ProductOptionCard({
 function getComparableProducts(
   products: Product[],
   primaryDrugType: string,
+  country: string,
   preferredFormFactor?: "injection" | "tablet",
   secondaryDrugType?: string
 ) {
@@ -416,6 +418,7 @@ function getComparableProducts(
       seen.add(product.id);
       return true;
     })
+    .sort((a, b) => getProductMonthlyPrice(a, country) - getProductMonthlyPrice(b, country))
     .slice(0, 4);
 }
 
@@ -461,6 +464,10 @@ function getLowestMonthlyPlan(product: Product, country: string) {
     })
     .filter((plan): plan is { durationMonths: number; monthlyAmount: number; currency: string } => plan !== null)
     .sort((a, b) => a.monthlyAmount - b.monthlyAmount)[0];
+}
+
+function getProductMonthlyPrice(product: Product, country: string) {
+  return getLowestMonthlyPlan(product, country)?.monthlyAmount ?? Number.POSITIVE_INFINITY;
 }
 
 function StatCard({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) {

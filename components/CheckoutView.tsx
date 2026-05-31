@@ -202,7 +202,7 @@ export default function CheckoutView() {
       checkout.open();
     } catch (error) {
       console.error("Checkout failed", error);
-      alert("Checkout failed. Please ensure you are logged in and your Razorpay configuration is correct.");
+      alert(error instanceof Error ? error.message : "Checkout failed. Please try again.");
       setIsSubmitting(false);
     }
   };
