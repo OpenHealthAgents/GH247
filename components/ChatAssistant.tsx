@@ -1,6 +1,7 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
+import type { UIMessage } from "ai";
 import { usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
@@ -75,8 +76,7 @@ export function ChatAssistant() {
               </div>
             )}
             
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {messages.map((m: any) => (
+            {messages.map((m) => (
               <div
                 key={m.id}
                 className={cn(
@@ -92,8 +92,7 @@ export function ChatAssistant() {
                       : "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
                   )}
                 >
-                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  {(m as any).content}
+                  {getMessageText(m)}
                 </div>
               </div>
             ))}
@@ -125,8 +124,7 @@ export function ChatAssistant() {
               const val = input;
               setInput("");
               try {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                await sendMessage(val as any);
+                await sendMessage({ text: val });
               } catch (err) {
                 console.error("Chat Error:", err);
               }
@@ -153,4 +151,11 @@ export function ChatAssistant() {
       )}
     </>
   );
+}
+
+function getMessageText(message: UIMessage) {
+  return message.parts
+    .filter((part) => part.type === "text")
+    .map((part) => part.text)
+    .join("");
 }

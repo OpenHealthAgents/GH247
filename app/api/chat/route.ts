@@ -1,5 +1,5 @@
 import { openai } from "@ai-sdk/openai";
-import { streamText } from "ai";
+import { convertToModelMessages, streamText } from "ai";
 import { AI_SYSTEM_PROMPT } from "@/lib/ai-assistant";
 
 export const dynamic = "force-dynamic";
@@ -26,10 +26,10 @@ export async function POST(req: Request) {
     const result = await streamText({
       model: openai("gpt-4o-mini"),
       system: AI_SYSTEM_PROMPT,
-      messages,
+      messages: await convertToModelMessages(messages),
     });
 
-    return result.toTextStreamResponse();
+    return result.toUIMessageStreamResponse();
   } catch (error) {
     console.error("POST /api/chat - Fatal error:", error);
     return new Response(
