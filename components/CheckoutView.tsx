@@ -14,6 +14,7 @@ import Image from "next/image";
 interface Product {
   id: string;
   name: string;
+  activeIngredient?: string | null;
   description: string;
   image: string | null;
   formFactor: string;
@@ -121,11 +122,9 @@ export default function CheckoutView() {
           
           if (!detectedRegion) detectedRegion = invData.region;
 
-          // Auto-select the first plan for the recommended drug
+          // Auto-select the first plan for the recommended treatment.
           if (drugType && invData.products.length > 0) {
-            const product = invData.products.find((p: Product) => 
-              p.name.toLowerCase().includes(drugType!)
-            );
+            const product = invData.products.find((p: Product) => matchesRecommendedProduct(p, drugType!));
             if (product && product.plans.length > 0) {
               setSelectedPlanId(product.plans[0].id);
             }
@@ -217,21 +216,18 @@ export default function CheckoutView() {
   const recommendedDrugType = recommendations.primary.drugType;
   
   // Find the recommended product and its plans from inventory
-  const selectedProduct = inventory.find(p => 
-    p.name.toLowerCase().includes(recommendedDrugType)
-  );
+  const selectedProduct = inventory.find(p => matchesRecommendedProduct(p, recommendedDrugType));
   
-  const plans = selectedProduct?.plans || [];
+  const plans = selectedProduct?.plans || inventory.flatMap(p => p.plans).filter(p => matchesRecommendedPlan(p, recommendedDrugType));
   const allPlans = inventory.flatMap(p => p.plans);
   const selectedPlan = allPlans.find(p => p.id === selectedPlanId);
 
   const getPriceValue = (plan: Plan) => {
-    const prices = plan.prices as Record<string, number>;
-    return prices[region.country] || prices.US;
+    return getPlanPrice(plan, region.country);
   };
 
   const getPriceCurrency = (plan: Plan) => {
-    return plan.priceCurrencies[region.country] || plan.priceCurrencies.US || region.currency;
+    return getPlanCurrency(plan, region.country, region.currency);
   };
 
   return (
@@ -277,7 +273,7 @@ export default function CheckoutView() {
               <div className="grid gap-4 sm:grid-cols-2">
                 {plans.map((plan) => {
                   const totalPrice = getPriceValue(plan);
-                  const perMonth = Math.round(totalPrice / plan.durationMonths);
+                  const perMonth = totalPrice ? Math.round(totalPrice / plan.durationMonths) : null;
                   
                   const savings = plan.durationMonths === 3 ? "Most Popular" : plan.durationMonths === 6 ? "Best Value" : plan.durationMonths === 12 ? "Best Deal" : null;
                   
@@ -302,9 +298,9 @@ export default function CheckoutView() {
                       </div>
                       <div className="flex items-baseline gap-1">
                         <span className="text-3xl font-black text-zinc-900 dark:text-zinc-100">
-                        {formatCurrency(perMonth, getPriceCurrency(plan), region.locale)}
+                        {perMonth ? formatCurrency(perMonth, getPriceCurrency(plan), region.locale) : "Price unavailable"}
                         </span>
-                        <span className="text-sm font-medium text-zinc-500">/mo</span>
+                        {perMonth && <span className="text-sm font-medium text-zinc-500">/mo</span>}
                       </div>
                       <p className="text-xs text-zinc-400">
                         {plan.durationMonths === 1 ? "Great if you want to try it first." : 
@@ -313,7 +309,7 @@ export default function CheckoutView() {
                          "Maximum savings package."}
                       </p>
                       <div className="mt-2 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                        Total: {formatCurrency(totalPrice, getPriceCurrency(plan), region.locale)}
+                        Total: {totalPrice ? formatCurrency(totalPrice, getPriceCurrency(plan), region.locale) : "Unavailable"}
                       </div>
                     </button>
                   );
@@ -394,7 +390,7 @@ export default function CheckoutView() {
                   <div className="flex justify-between text-sm">
                     <span className="text-zinc-500 capitalize">{recommendedDrugType} Program</span>
                     <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                      {selectedPlan ? formatCurrency(getPriceValue(selectedPlan), getPriceCurrency(selectedPlan), region.locale) : "-"}
+                      {selectedPlan && getPriceValue(selectedPlan) ? formatCurrency(getPriceValue(selectedPlan), getPriceCurrency(selectedPlan), region.locale) : "-"}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
@@ -409,14 +405,14 @@ export default function CheckoutView() {
                     <div className="flex justify-between">
                       <span className="font-bold">Total</span>
                       <span className="text-xl font-black">
-                        {selectedPlan ? formatCurrency(getPriceValue(selectedPlan), getPriceCurrency(selectedPlan), region.locale) : "-"}
+                        {selectedPlan && getPriceValue(selectedPlan) ? formatCurrency(getPriceValue(selectedPlan), getPriceCurrency(selectedPlan), region.locale) : "-"}
                       </span>
                     </div>
                   </div>
                   <button
                     form="checkout-form"
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !selectedPlan || !getPriceValue(selectedPlan)}
                     className="mt-2 w-full flex items-center justify-center gap-2 rounded-full bg-zinc-900 py-4 font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98] dark:bg-zinc-100 dark:text-zinc-900 disabled:opacity-50"
                   >
                     {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Lock className="h-4 w-4" />}
@@ -469,4 +465,26 @@ export default function CheckoutView() {
       </div>
     </div>
   );
+}
+
+function matchesRecommendedProduct(product: Product, drugType: string) {
+  const normalizedDrugType = drugType.toLowerCase();
+
+  return (
+    product.name.toLowerCase().includes(normalizedDrugType) ||
+    product.activeIngredient?.toLowerCase().includes(normalizedDrugType) ||
+    product.plans.some((plan) => matchesRecommendedPlan(plan, drugType))
+  );
+}
+
+function matchesRecommendedPlan(plan: Plan, drugType: string) {
+  return plan.drugType.toLowerCase().includes(drugType.toLowerCase());
+}
+
+function getPlanPrice(plan: Plan, country: string) {
+  return plan.prices[country] ?? plan.prices.US ?? Object.values(plan.prices)[0];
+}
+
+function getPlanCurrency(plan: Plan, country: string, fallbackCurrency: string) {
+  return plan.priceCurrencies[country] ?? plan.priceCurrencies.US ?? Object.values(plan.priceCurrencies)[0] ?? fallbackCurrency;
 }
