@@ -142,7 +142,7 @@ export default function ResultsView({ onCheckout }: ResultsViewProps) {
             animate={{ opacity: 1, y: 0 }}
             className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl"
           >
-            Your Wellora Plan is Ready
+            Your GH247 Plan is Ready
           </motion.h1>
           <p className="text-lg text-zinc-600 dark:text-zinc-400">
             Based on your profile, we&apos;ve designed a treatment path tailored to your goals.
@@ -213,7 +213,7 @@ export default function ResultsView({ onCheckout }: ResultsViewProps) {
                   region={recommendations.region}
                   isRecommended={index === 0}
                   onSelect={() => {
-                    sessionStorage.setItem("wellora:selectedProductId", product.id);
+                    sessionStorage.setItem("gh247:selectedProductId", product.id);
                     onCheckout();
                   }}
                 />

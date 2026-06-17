@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
       });
 
       try {
-        const userEmail = userSession?.user.email || "test@wellora.com";
+        const userEmail = userSession?.user.email || "test@goodhealth247.com";
 
         const user = await prisma.user.upsert({
           where: { email: userEmail },
@@ -244,4 +244,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
-

@@ -17,7 +17,7 @@ export default async function AdminDashboard() {
     <div className="space-y-8">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Dashboard Overview</h1>
-        <p className="text-zinc-500 text-sm">Real-time metrics for the Wellora platform.</p>
+        <p className="text-zinc-500 text-sm">Real-time metrics for the GH247 platform.</p>
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

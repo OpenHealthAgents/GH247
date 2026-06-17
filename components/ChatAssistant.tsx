@@ -52,7 +52,7 @@ export function ChatAssistant() {
           {/* Header */}
           <div className="flex items-center justify-between bg-zinc-900 px-6 py-4 text-white dark:bg-zinc-800">
             <div>
-              <h3 className="text-sm font-bold">Wellora Assistant</h3>
+              <h3 className="text-sm font-bold">GH247 Assistant</h3>
               <p className="text-[10px] text-zinc-400">Ask us about our plans and medications</p>
             </div>
             <button onClick={() => setIsOpen(false)} className="hover:opacity-70">

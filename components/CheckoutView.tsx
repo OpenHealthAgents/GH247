@@ -96,7 +96,7 @@ export default function CheckoutView() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const storedProductId = sessionStorage.getItem("wellora:selectedProductId") || "";
+        const storedProductId = sessionStorage.getItem("gh247:selectedProductId") || "";
         setSelectedProductId(storedProductId);
 
         const [recRes, trustRes, invRes] = await Promise.all([
