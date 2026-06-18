@@ -197,7 +197,7 @@ async function main() {
       id: "seed-trust-2",
       type: "testimonial",
       title: "Finally Found Success",
-      description: "Finally something that worked. I had tried every diet under the sun before GH247.",
+      description: "Finally something that worked. I had tried every diet under the sun before DrGodly.",
       metadata: { author: "James L.", loss: "15kg lost", rating: 5 },
       isActive: true,
     },

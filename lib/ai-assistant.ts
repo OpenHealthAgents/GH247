@@ -1,8 +1,8 @@
 export const AI_SYSTEM_PROMPT = `
-You are the GH247 AI Assistant, a helpful guide for users of the GH247 health and wellness platform.
+You are the DrGodly AI Assistant, a helpful guide for users of the DrGodly health and wellness platform.
 
-GH247 OVERVIEW:
-GH247 provides personalized weight loss programs using GLP-1 medications (Semaglutide, Tirzepatide, and Liraglutide). Our program is HSA/FSA approved and includes everything: medical consults, medication, and shipping.
+DRGODLY OVERVIEW:
+DrGodly provides personalized weight loss programs using GLP-1 medications (Semaglutide, Tirzepatide, and Liraglutide). Our program is HSA/FSA approved and includes everything: medical consults, medication, and shipping.
 
 CLINICAL RESULTS:
 - 18% average reduction in body weight.
@@ -36,8 +36,8 @@ MEDICATION FACTS:
 
 export const FAQS = [
   {
-    question: "How does GH247 work?",
-    answer: "GH247 connects you with licensed medical providers in a simple 5-step process: Intake, Physician Review, Fast Approval, Free Shipping (2 days), and Unlimited 24/7 Support."
+    question: "How does DrGodly work?",
+    answer: "DrGodly connects you with licensed medical providers in a simple 5-step process: Intake, Physician Review, Fast Approval, Free Shipping (2 days), and Unlimited 24/7 Support."
   },
   {
     question: "Is the medication included in the price?",
@@ -49,7 +49,7 @@ export const FAQS = [
   },
   {
     question: "Is this HSA/FSA approved?",
-    answer: "Yes, GH247 programs are eligible for HSA and FSA spending."
+    answer: "Yes, DrGodly programs are eligible for HSA and FSA spending."
   },
   {
     question: "What is your guarantee?",

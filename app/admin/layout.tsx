@@ -28,7 +28,7 @@ export default async function AdminLayout({
         <div className="flex h-16 items-center border-b border-zinc-100 px-6 dark:border-zinc-900">
           <Link href="/admin" className="flex items-center gap-2 font-bold text-zinc-900 dark:text-zinc-100">
             <ShieldCheck className="h-5 w-5 text-zinc-900 dark:text-zinc-100" />
-            GH247 Admin
+            DrGodly Admin
           </Link>
         </div>
         <nav className="flex flex-col gap-1 p-4">

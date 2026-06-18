@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
       });
 
       try {
-        const userEmail = userSession?.user.email || "test@goodhealth247.com";
+        const userEmail = userSession?.user.email || "test@drgodly.com";
 
         const user = await prisma.user.upsert({
           where: { email: userEmail },

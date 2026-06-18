@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { RecommendationResult } from "@/lib/recommendations";
 import { cn } from "@/lib/utils";
-import { Loader2, ShieldCheck, CheckCircle2, Lock, CreditCard, Box } from "lucide-react";
+import { Loader2, ShieldCheck, CheckCircle2, Lock, CreditCard, Box, Phone } from "lucide-react";
 import { TrustContent } from "@/lib/trust-data";
 import { StatsBanner } from "@/components/trust/StatsBanner";
 import { TestimonialCard } from "@/components/trust/TestimonialCard";
@@ -96,7 +96,7 @@ export default function CheckoutView() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const storedProductId = sessionStorage.getItem("gh247:selectedProductId") || "";
+        const storedProductId = sessionStorage.getItem("drgodly:selectedProductId") || "";
         setSelectedProductId(storedProductId);
 
         const [recRes, trustRes, invRes] = await Promise.all([
@@ -372,9 +372,33 @@ export default function CheckoutView() {
               </form>
             </div>
 
-            {/* Step 3: Payment */}
+            {/* Step 3: Doctor Consultation */}
             <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-              <h2 className="mb-6 text-xl font-bold text-zinc-900 dark:text-zinc-100">3. Payment Information</h2>
+              <h2 className="mb-6 text-xl font-bold text-zinc-900 dark:text-zinc-100">3. Talk to a Doctor Before Purchase</h2>
+              <div className="rounded-xl border border-zinc-200 p-5 dark:border-zinc-800">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                      Prefer to speak with a doctor first?
+                    </p>
+                    <p className="mt-1 text-xs text-zinc-500">
+                      Call DrGodly before placing your order. You can complete payment after your questions are answered.
+                    </p>
+                  </div>
+                  <a
+                    href="tel:+919346317790"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-zinc-900 px-5 py-3 text-sm font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98] dark:bg-zinc-100 dark:text-zinc-900"
+                  >
+                    <Phone className="h-4 w-4" />
+                    Call 9346317790
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 4: Payment */}
+            <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+              <h2 className="mb-6 text-xl font-bold text-zinc-900 dark:text-zinc-100">4. Payment Information</h2>
               <div className="flex items-center gap-4 rounded-xl border border-dashed border-zinc-200 p-8 dark:border-zinc-800">
                 <CreditCard className="h-8 w-8 text-zinc-400" />
                 <div>

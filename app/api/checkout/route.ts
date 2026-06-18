@@ -102,7 +102,7 @@ export async function POST(req: Request) {
       orderId: razorpayOrder.id,
       amount: razorpayOrder.amount,
       currency: razorpayOrder.currency,
-      name: "GH247",
+      name: "DrGodly",
       description: `${plan.drugType} ${plan.durationMonths}-month program`,
       prefill: {
         email: userEmail,

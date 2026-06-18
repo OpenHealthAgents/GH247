@@ -8,7 +8,7 @@ import { Loader2, Send } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { GH247Logo } from "@/components/GH247Logo";
+import { DrGodlyLogo } from "@/components/DrGodlyLogo";
 
 import { LoginButton } from "@/components/LoginButton";
 
@@ -95,7 +95,7 @@ export function ChatIntakeComponent({ onComplete }: { onComplete: (result: unkno
       const welcomeMsg: Message = {
         id: "welcome",
         role: "assistant",
-        content: `Welcome to GH247. We've detected you are in ${getCountryDisplayName(regionData.country)}. This guided intake checks your initial eligibility for weight-loss treatment. Let's start with some basic information.`,
+        content: `Welcome to DrGodly. We've detected you are in ${getCountryDisplayName(regionData.country)}. This guided intake checks your initial eligibility for weight-loss treatment. Let's start with some basic information.`,
       };
       
       const step = data.currentStep || IntakeStep.HEIGHT;
@@ -142,7 +142,7 @@ export function ChatIntakeComponent({ onComplete }: { onComplete: (result: unkno
       stat?.description ||
       "Many members begin seeing weight changes within the first few months of a treatment plan.";
     const testimonialContext = test
-      ? ` One member, ${test.metadata?.author || "a GH247 member"}, shared: "${test.description}"`
+      ? ` One member, ${test.metadata?.author || "a DrGodly member"}, shared: "${test.description}"`
       : "";
 
     return `${weightContext} ${trustContext}${testimonialContext}`;
@@ -398,7 +398,7 @@ export function ChatIntakeComponent({ onComplete }: { onComplete: (result: unkno
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-white dark:bg-black text-zinc-900 dark:text-zinc-100">
       <header className="flex min-h-16 items-center justify-between gap-3 border-b border-zinc-100 px-4 py-3 dark:border-zinc-900 sm:px-6">
-        <GH247Logo />
+        <DrGodlyLogo />
         <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <ThemeToggle />
           <button 

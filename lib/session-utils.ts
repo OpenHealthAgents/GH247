@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { v4 as uuidv4 } from "uuid";
 
-const SESSION_COOKIE_NAME = "gh247_intake_session";
+const SESSION_COOKIE_NAME = "drgodly_intake_session";
 
 export async function getIntakeSessionId() {
   const cookieStore = await cookies();

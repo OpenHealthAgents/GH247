@@ -1,6 +1,6 @@
-# GH247
+# DrGodly
 
-GH247 is a full-stack health and wellness platform specializing in personalized weight loss programs using GLP-1 medications.
+DrGodly is a full-stack health and wellness platform specializing in personalized weight loss programs using GLP-1 medications.
 
 Production domain: [https://www.goodhealth247.com](https://www.goodhealth247.com)
 

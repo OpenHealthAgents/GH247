@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { CheckCircle2, ArrowRight, ShieldCheck, Zap, Star, Phone } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { GH247Logo } from "@/components/GH247Logo";
+import { DrGodlyLogo } from "@/components/DrGodlyLogo";
 
 export default async function LandingPage() {
   return (
@@ -10,7 +10,7 @@ export default async function LandingPage() {
       {/* Navigation */}
       <header className="fixed top-0 z-50 w-full border-b border-zinc-100 bg-white/80 backdrop-blur-md dark:border-zinc-900 dark:bg-black/80">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-          <GH247Logo />
+          <DrGodlyLogo />
           <nav className="hidden items-center gap-8 text-sm font-medium sm:flex">
             <Link href="#how-it-works" className="hover:text-zinc-500">How it Works</Link>
             <Link href="#pricing" className="hover:text-zinc-500">Pricing</Link>
@@ -76,7 +76,7 @@ export default async function LandingPage() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div className="space-y-6">
-              <h2 className="text-4xl font-bold tracking-tight">The GH247 Guarantee</h2>
+              <h2 className="text-4xl font-bold tracking-tight">The DrGodly Guarantee</h2>
               <p className="text-lg text-zinc-600 dark:text-zinc-400">
                 We believe so strongly in our program that if you do not lose weight by the end of your complete program, you can request a refund. It is that simple!
               </p>
@@ -108,10 +108,10 @@ export default async function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-zinc-100 py-12 dark:border-zinc-900">
         <div className="mx-auto max-w-7xl px-6 text-center text-sm text-zinc-500">
-          <p className="mb-4">© 2026 GH247. All rights reserved.</p>
+          <p className="mb-4">© 2026 DrGodly. All rights reserved.</p>
           <p className="mx-auto max-w-3xl leading-relaxed opacity-70">
             Medication prescriptions are at the discretion of medical providers and may not be suitable for everyone. 
-            GH247 patients typically result in 1-2 lbs per week weight loss in 4 weeks, involving a healthy diet and exercise changes.
+            DrGodly patients typically result in 1-2 lbs per week weight loss in 4 weeks, involving a healthy diet and exercise changes.
             Consult a healthcare professional before using medication or starting any weight loss program.
           </p>
         </div>
