@@ -1,4 +1,5 @@
 import { IntakeData } from "./intake-state";
+import type { EligibilityResult } from "./eligibility";
 
 export interface RecommendedPlan {
   drugType: "semaglutide" | "liraglutide" | "tirzepatide";
@@ -7,7 +8,10 @@ export interface RecommendedPlan {
 }
 
 export interface RecommendationResult {
-  primary: RecommendedPlan;
+  clinicalPath: "glp1" | "doctor_review";
+  nextStep: "choose_plan" | "doctor_review";
+  summary: string;
+  primary?: RecommendedPlan;
   secondary?: RecommendedPlan;
 }
 
@@ -17,14 +21,29 @@ export interface RecommendationResult {
  * - Default -> semaglutide (lowest-cost starting tier)
  * - If user prefers Potency -> tirzepatide (highest-efficacy tier)
  * - If user prefers Tablets -> semaglutide tablet-compatible options
+ * - If eligibility is not approved -> doctor_review path with no treatment plans
  */
-export function getRecommendations(preferences: Partial<IntakeData>): RecommendationResult {
+export function getRecommendations(
+  preferences: Partial<IntakeData>,
+  eligibility?: EligibilityResult
+): RecommendationResult {
+  if (eligibility && eligibility.status !== "eligible") {
+    return {
+      clinicalPath: "doctor_review",
+      nextStep: "doctor_review",
+      summary: eligibility.reason || "A doctor review is required before a treatment plan can be shown.",
+    };
+  }
+
   const primaryInterest = preferences?.primaryInterest;
   const formFactor = preferences?.formFactor;
 
   // Potency-first users should see tirzepatide first, with semaglutide as the cheaper fallback.
   if (primaryInterest === "potency") {
     return {
+      clinicalPath: "glp1",
+      nextStep: "choose_plan",
+      summary: "We matched you to a GLP-1 treatment path based on your priorities.",
       primary: {
         drugType: "tirzepatide",
         tier: "premium",
@@ -41,6 +60,9 @@ export function getRecommendations(preferences: Partial<IntakeData>): Recommenda
   // Tablet preference means we should bias toward a non-injection path when available.
   if (formFactor === "tablet") {
     return {
+      clinicalPath: "glp1",
+      nextStep: "choose_plan",
+      summary: "We matched you to a GLP-1 treatment path that fits your form-factor preference.",
       primary: {
         drugType: "semaglutide",
         tier: "affordable",
@@ -56,6 +78,9 @@ export function getRecommendations(preferences: Partial<IntakeData>): Recommenda
 
   // Default path: keep the recommendation conservative and cost-led.
   return {
+    clinicalPath: "glp1",
+    nextStep: "choose_plan",
+    summary: "We matched you to a conservative GLP-1 starting path.",
     primary: {
       drugType: "semaglutide",
       tier: "affordable",

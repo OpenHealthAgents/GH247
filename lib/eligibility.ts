@@ -23,19 +23,30 @@ export function calculateBMI(heightCm: number, weightKg: number): number {
  * - If any healthCritical conditions present → not_eligible or doctor_review
  * - Else → eligible
  */
-export function determineEligibility(data: IntakeData): EligibilityResult {
-  const bmi = calculateBMI(data.height, data.weight);
+export function determineEligibilityForRegion(
+  data: IntakeData,
+  country: string,
+  bmiOverride?: number
+): EligibilityResult {
+  const bmi = bmiOverride ?? calculateBMI(data.height, data.weight);
 
   const hasMtcMen2History = data.healthCritical.includes("mtc_men2_history");
   const hasCriticalCondition = data.healthCritical.length > 0 && !data.healthCritical.includes("none");
   const hasExtendedCondition = data.healthExtended.length > 0 && !data.healthExtended.includes("none");
-
-  if (bmi < 27) {
-    return {
-      status: "not_eligible",
-      reason: `Your BMI is ${bmi.toFixed(1)}, which is below our current threshold of 27 for GLP-1 treatment.`,
-    };
-  }
+  const hasWeightRelatedCondition = hasCondition(data.healthExtended, [
+    "hypertension",
+    "diabetes_t2",
+    "high_cholesterol",
+    "sleep_apnea",
+  ]);
+  const hasMetabolicRiskFactor = hasCondition(data.healthExtended, [
+    "prediabetes",
+    "pcos",
+    "high_cholesterol",
+  ]);
+  const isSouthAsian = country === "IN";
+  const bmiThreshold = isSouthAsian ? 27.5 : 27;
+  const qualifyingLowBmi = isSouthAsian ? 25 : Number.POSITIVE_INFINITY;
 
   if (hasMtcMen2History) {
     return {
@@ -51,13 +62,6 @@ export function determineEligibility(data: IntakeData): EligibilityResult {
     };
   }
 
-  if (hasExtendedCondition) {
-    return {
-      status: "doctor_review",
-      reason: "Based on your medical conditions (e.g. Gallbladder, Hypertension, or Diabetes), a doctor needs to manually review your profile to ensure safety.",
-    };
-  }
-
   if (data.opiateUse === "yes") {
     return {
       status: "not_eligible",
@@ -65,8 +69,48 @@ export function determineEligibility(data: IntakeData): EligibilityResult {
     };
   }
 
+  if (bmi >= 30) {
+    return {
+      status: "eligible",
+      reason: `Your BMI is ${bmi.toFixed(1)}, which meets the standard qualification threshold for GLP-1 treatment.`,
+    };
+  }
+
+  if (isSouthAsian && bmi >= qualifyingLowBmi && hasMetabolicRiskFactor) {
+    return {
+      status: "eligible",
+      reason: `Your BMI is ${bmi.toFixed(1)}, which meets the South Asian qualification threshold when metabolic risk factors are present.`,
+    };
+  }
+
+  if (bmi >= bmiThreshold && hasWeightRelatedCondition) {
+    return {
+      status: "eligible",
+      reason: `Your BMI is ${bmi.toFixed(1)}, which meets the qualification threshold when weight-related conditions are present.`,
+    };
+  }
+
+  if (hasExtendedCondition) {
+    return {
+      status: "doctor_review",
+      reason: isSouthAsian
+        ? `Your BMI is ${bmi.toFixed(1)}. A doctor should review your profile before GLP-1 treatment because South Asian guidelines are more nuanced at lower BMI values.`
+        : `Your BMI is ${bmi.toFixed(1)}. A doctor should review your profile before GLP-1 treatment because your medical conditions need manual review.`,
+    };
+  }
+
   return {
-    status: "eligible",
-    reason: "You meet the initial criteria for our medical weight loss programs.",
+    status: "not_eligible",
+    reason: isSouthAsian
+      ? `Your BMI is ${bmi.toFixed(1)}, which is below the usual qualification threshold of ${bmiThreshold} for GLP-1 treatment in South Asian populations unless metabolic risk factors are present.`
+      : `Your BMI is ${bmi.toFixed(1)}, which is below the usual qualification threshold of ${bmiThreshold} for GLP-1 treatment.`,
   };
+}
+
+export function determineEligibility(data: IntakeData, country = "US"): EligibilityResult {
+  return determineEligibilityForRegion(data, country);
+}
+
+function hasCondition(values: string[], allowed: string[]) {
+  return values.some((value) => allowed.includes(value));
 }

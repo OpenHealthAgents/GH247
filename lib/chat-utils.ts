@@ -69,6 +69,9 @@ export function getStepMetadata(step: IntakeStep, region: RegionConfig): StepMet
       options: [
         { label: "Gallbladder disease", value: "gallbladder" },
         { label: "Hypertension", value: "hypertension" },
+        { label: "High cholesterol", value: "high_cholesterol" },
+        { label: "Prediabetes", value: "prediabetes" },
+        { label: "PCOS", value: "pcos" },
         { label: "Seizures", value: "seizures" },
         { label: "Glaucoma", value: "glaucoma" },
         { label: "Sleep apnea", value: "sleep_apnea" },

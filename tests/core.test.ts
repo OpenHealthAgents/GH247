@@ -55,16 +55,25 @@ describe("eligibility engine", () => {
     });
 
     assert.equal(result.status, "not_eligible");
-    assert.match(result.reason ?? "", /below our current threshold of 27/);
+    assert.match(result.reason ?? "", /below the usual qualification threshold of 27/);
   });
 
-  it("allows BMI 27 and above through the initial criteria when no severe condition is present", () => {
+  it("allows BMI 30 and above through the standard criteria when no severe condition is present", () => {
+    const result = determineEligibility({
+      ...baseIntake,
+      weight: 86.7,
+    });
+
+    assert.equal(result.status, "eligible");
+  });
+
+  it("marks BMI between 27 and 30 without conditions as not eligible", () => {
     const result = determineEligibility({
       ...baseIntake,
       weight: 78.03,
     });
 
-    assert.equal(result.status, "eligible");
+    assert.equal(result.status, "not_eligible");
   });
 
   it("routes users with severe conditions to doctor review", () => {
@@ -74,6 +83,29 @@ describe("eligibility engine", () => {
     });
 
     assert.equal(result.status, "doctor_review");
+  });
+
+  it("qualifies BMI 27 and above with a weight-related condition", () => {
+    const result = determineEligibility({
+      ...baseIntake,
+      weight: 78.03,
+      healthExtended: ["hypertension"],
+    });
+
+    assert.equal(result.status, "eligible");
+  });
+
+  it("applies South Asian thresholds for India", () => {
+    const result = determineEligibility(
+      {
+        ...baseIntake,
+        weight: 67.6,
+        healthExtended: ["prediabetes"],
+      },
+      "IN"
+    );
+
+    assert.equal(result.status, "eligible");
   });
 
   it("marks users with critical health conditions as not eligible", () => {
@@ -119,6 +151,8 @@ describe("recommendation engine", () => {
   it("defaults to the affordable semaglutide tier", () => {
     const result = getRecommendations({ primaryInterest: "affordability", formFactor: "injection" });
 
+    assert.equal(result.clinicalPath, "glp1");
+    assert.ok(result.primary);
     assert.equal(result.primary.drugType, "semaglutide");
     assert.equal(result.primary.tier, "affordable");
     assert.equal(result.secondary?.drugType, "tirzepatide");
@@ -127,6 +161,8 @@ describe("recommendation engine", () => {
   it("recommends premium tirzepatide with an affordable fallback for potency preference", () => {
     const result = getRecommendations({ primaryInterest: "potency", formFactor: "injection" });
 
+    assert.equal(result.clinicalPath, "glp1");
+    assert.ok(result.primary);
     assert.equal(result.primary.drugType, "tirzepatide");
     assert.equal(result.primary.tier, "premium");
     assert.equal(result.secondary?.drugType, "semaglutide");
@@ -135,8 +171,22 @@ describe("recommendation engine", () => {
   it("recommends semaglutide when form factor preference is tablet", () => {
     const result = getRecommendations({ primaryInterest: "affordability", formFactor: "tablet" });
 
+    assert.equal(result.clinicalPath, "glp1");
+    assert.ok(result.primary);
     assert.equal(result.primary.drugType, "semaglutide");
     assert.equal(result.primary.tier, "affordable");
+  });
+
+  it("returns a doctor review path when eligibility is not approved", () => {
+    const result = getRecommendations(
+      { primaryInterest: "affordability", formFactor: "injection" },
+      { status: "not_eligible", reason: "Below BMI threshold" }
+    );
+
+    assert.equal(result.clinicalPath, "doctor_review");
+    assert.equal(result.nextStep, "doctor_review");
+    assert.equal(result.primary, undefined);
+    assert.match(result.summary, /Below BMI threshold/);
   });
 });
 

@@ -9,6 +9,7 @@ import { headers } from "next/headers";
 import { getDetectedRegion } from "@/lib/region-server";
 import prisma from "@/lib/prisma";
 import { intakeDataFromStoredIntake } from "@/lib/intake-results";
+import { determineEligibility } from "@/lib/eligibility";
 
 export const dynamic = "force-dynamic";
 
@@ -43,10 +44,12 @@ export async function GET() {
   }
 
   // The recommendation engine uses primaryInterest and formFactor from the data
-  const result = getRecommendations(data);
+  const eligibility = determineEligibility(data as IntakeData, region.country);
+  const result = getRecommendations(data, eligibility);
 
   return NextResponse.json({
     ...result,
+    eligibility,
     preferences: {
       formFactor: data.formFactor,
       primaryInterest: data.primaryInterest,

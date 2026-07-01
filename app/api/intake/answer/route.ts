@@ -93,8 +93,8 @@ export async function POST(req: NextRequest) {
     if (nextStep === IntakeStep.COMPLETED) {
       const { determineEligibility } = await import("@/lib/eligibility");
       const { getRecommendations } = await import("@/lib/recommendations");
-      const eligibility = determineEligibility(intakeData);
-      const recommendations = getRecommendations(intakeData);
+      const eligibility = determineEligibility(intakeData, region.country);
+      const recommendations = getRecommendations(intakeData, eligibility);
 
       const prisma = (await import("@/lib/prisma")).default;
 

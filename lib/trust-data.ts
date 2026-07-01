@@ -41,7 +41,7 @@ export const CURATED_TRUST_CONTENT: TrustContent[] = [
     title: "Incredible Results",
     description: "The intake process was so easy. I felt like the recommendation actually understood my lifestyle.",
     metadata: {
-      author: "Sarah M.",
+      author: "Aarav S.",
       loss: "22kg lost",
       rating: 5
     }
@@ -52,7 +52,7 @@ export const CURATED_TRUST_CONTENT: TrustContent[] = [
     title: "Professional Support",
     description: "Finally a plan that didn't feel like a generic diet. The medical support makes all the difference.",
     metadata: {
-      author: "James L.",
+      author: "Priya N.",
       loss: "15kg lost",
       rating: 5
     }
@@ -63,7 +63,7 @@ export const CURATED_TRUST_CONTENT: TrustContent[] = [
     title: "Life Changing",
     description: "Lost 10kg in 3 months and I've never felt better. The once-weekly injection is so convenient.",
     metadata: {
-      author: "Emma R.",
+      author: "Rohan P.",
       loss: "10kg lost",
       rating: 5
     }
@@ -74,7 +74,7 @@ export const CURATED_TRUST_CONTENT: TrustContent[] = [
     title: "Clear Plan",
     description: "Seeing my goal broken into a weekly range made the plan feel realistic and easier to follow.",
     metadata: {
-      author: "Priya K.",
+      author: "Meera T.",
       loss: "8kg lost",
       rating: 5
     }
@@ -85,7 +85,7 @@ export const CURATED_TRUST_CONTENT: TrustContent[] = [
     title: "Simple Intake",
     description: "The questions were straightforward, and the recommendation helped me understand which option fit my priorities.",
     metadata: {
-      author: "Michael R.",
+      author: "Arjun V.",
       loss: "12kg lost",
       rating: 5
     }

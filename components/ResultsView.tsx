@@ -10,9 +10,11 @@ import { TestimonialCard } from "@/components/trust/TestimonialCard";
 import { StatsBanner } from "@/components/trust/StatsBanner";
 import { FALLBACK_TRUST_CONTENT, TrustContent } from "@/lib/trust-data";
 import { TIERED_PRICING_STRATEGY, formatTierMonthlyPrice, type PricingStrategyTier } from "@/lib/pricing-strategy";
+import type { EligibilityResult } from "@/lib/eligibility";
 
 type RecommendationPayload = RecommendationResult & {
   region: RegionConfig;
+  eligibility?: EligibilityResult;
   preferences?: {
     formFactor?: "injection" | "tablet";
     primaryInterest?: "affordability" | "potency";
@@ -91,8 +93,12 @@ export default function ResultsView({ onPlanSelect }: ResultsViewProps) {
     ...activeTestimonials,
     ...fallbackTestimonials.filter((item) => !activeTestimonials.some((active) => active.id === item.id)),
   ].slice(0, 3);
-  const primaryPlan = TIERED_PRICING_STRATEGY.find((tier) => tier.band === recommendations.primary.tier) || TIERED_PRICING_STRATEGY[0];
-  const showPlanChooser = recommendations.preferences?.formFactor !== "tablet";
+  const primaryTier = recommendations.primary?.tier;
+  const primaryPlan = primaryTier
+    ? (TIERED_PRICING_STRATEGY.find((tier) => tier.band === primaryTier) || TIERED_PRICING_STRATEGY[0])
+    : null;
+  const isEligible = recommendations.clinicalPath === "glp1";
+  const showPlanChooser = recommendations.nextStep === "choose_plan" && recommendations.preferences?.formFactor !== "tablet";
 
   return (
     <div className="min-h-screen bg-zinc-50 px-6 py-12 dark:bg-black">
@@ -106,7 +112,9 @@ export default function ResultsView({ onPlanSelect }: ResultsViewProps) {
             Your DrGodly Plan is Ready
           </motion.h1>
           <p className="text-lg text-zinc-600 dark:text-zinc-400">
-            We&apos;ve matched you to a treatment path. Injection users can compare plans below, while tablet users continue straight to the doctor appointment step.
+            {isEligible
+              ? "We've matched you to a treatment path. Injection users can compare plans below, while tablet users continue straight to the doctor appointment step."
+              : "Based on the information you provided, a GLP-1 plan is not shown yet. A doctor review is needed before moving forward."}
           </p>
         </div>
 
@@ -188,26 +196,30 @@ export default function ResultsView({ onPlanSelect }: ResultsViewProps) {
               ))}
             </div>
 
-            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-              <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Recommended Starting Point</h3>
-              <p className="mt-2 text-sm text-zinc-500">
-                {primaryPlan.title} is the suggested default for your intake. If you need a different experience level, choose another plan above.
-              </p>
-            </div>
+            {primaryPlan && (
+              <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Recommended Starting Point</h3>
+                <p className="mt-2 text-sm text-zinc-500">
+                  {primaryPlan.title} is the suggested default for your intake. If you need a different experience level, choose another plan above.
+                </p>
+              </div>
+            )}
           </div>
-        ) : (
+        ) : isEligible ? (
           <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
             <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Tablet Path Selected</h3>
             <p className="mt-2 text-sm text-zinc-500">
               Since you selected tablets, there are no injection plan tiers to compare here. Continue to the doctor appointment screen to review your recommended path.
             </p>
-            <button
-              type="button"
-              onClick={() => onPlanSelect(primaryPlan)}
-              className="mt-5 inline-flex rounded-full bg-zinc-900 px-4 py-2 text-sm font-bold text-white dark:bg-zinc-100 dark:text-zinc-900"
-            >
-              Continue to Appointment
-            </button>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+              {recommendations.clinicalPath === "doctor_review" ? "Doctor Review Needed" : "Plan Selection Unavailable"}
+            </h3>
+            <p className="mt-2 text-sm text-zinc-500">
+              {recommendations.summary}
+            </p>
           </div>
         )}
 
@@ -232,8 +244,8 @@ export default function ResultsView({ onPlanSelect }: ResultsViewProps) {
                 </>
               ) : (
                 <>
-                  <NextStep number={1} title="Set Appointment" desc="Choose a doctor consultation slot that works for you." />
-                  <NextStep number={2} title="Continue to Checkout" desc="Finish the order once your appointment is set." />
+                  <NextStep number={1} title="Doctor Review" desc="A clinician needs to review your profile before a treatment plan is shown." />
+                  <NextStep number={2} title="Set Appointment" desc="Choose a doctor consultation slot that works for you." />
                 </>
               )}
             </ul>

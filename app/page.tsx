@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { CheckCircle2, ArrowRight, ShieldCheck, Zap, Star, Phone } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { DrGodlyLogo } from "@/components/DrGodlyLogo";
@@ -73,6 +74,118 @@ export default async function LandingPage() {
             <Feature icon={<Zap className="h-5 w-5 text-yellow-500" />} text="Lose Weight Fast" />
             <Feature icon={<CheckCircle2 className="h-5 w-5 text-blue-500" />} text="No Hidden Fees" />
             <Feature icon={<CheckCircle2 className="h-5 w-5 text-purple-500" />} text="Free Shipping" />
+          </div>
+        </div>
+      </section>
+
+      {/* Progress Stories */}
+      <section className="bg-white py-24 dark:bg-black">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-xs font-bold uppercase tracking-widest text-zinc-500">Real Progress Stories</p>
+            <h2 className="mt-4 text-4xl font-black tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl">
+              Visible changes from structured treatment
+            </h2>
+            <p className="mt-4 text-lg text-zinc-600 dark:text-zinc-400">
+              These visuals show the kind of improvement patients work toward with a doctor-guided plan, consistent follow-up, and healthy habits. Individual results vary.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-8 lg:grid-cols-2">
+            <figure className="overflow-hidden rounded-3xl border border-zinc-100 bg-zinc-50 shadow-sm dark:border-zinc-900 dark:bg-zinc-950">
+              <Image
+                src="/Before-After1.png"
+                alt="Before and after progress example showing a woman’s transformation"
+                width={2816}
+                height={1536}
+                className="h-auto w-full object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+              <figcaption className="space-y-2 p-6">
+                <p className="text-sm font-bold uppercase tracking-widest text-zinc-500">Example 1</p>
+                <p className="text-lg font-bold text-zinc-900 dark:text-zinc-100">From starting point to a more active routine</p>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                  A visual example of a more confident, energized look after following a structured program with medical support.
+                </p>
+              </figcaption>
+            </figure>
+
+            <figure className="overflow-hidden rounded-3xl border border-zinc-100 bg-zinc-50 shadow-sm dark:border-zinc-900 dark:bg-zinc-950">
+              <Image
+                src="/Before-After2.png"
+                alt="Before and after progress example showing a man’s transformation"
+                width={2816}
+                height={1536}
+                className="h-auto w-full object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+              <figcaption className="space-y-2 p-6">
+                <p className="text-sm font-bold uppercase tracking-widest text-zinc-500">Example 2</p>
+                <p className="text-lg font-bold text-zinc-900 dark:text-zinc-100">A clearer path toward steady progress</p>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                  Another example of the kind of body-composition change patients may pursue through a supervised weight-loss plan.
+                </p>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      {/* Clinical Expertise */}
+      <section className="bg-zinc-50 py-24 dark:bg-zinc-950">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+            <div className="overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+              <Image
+                src="/Kalyan%20Chakravarthy%20Kalwa.jpeg"
+                alt="Dr Kalyan Chakravarthy Kalwa, MBBS, DPharm"
+                width={800}
+                height={1000}
+                className="h-auto w-full object-cover"
+                sizes="(max-width: 1024px) 100vw, 45vw"
+                priority={false}
+              />
+            </div>
+
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <p className="text-xs font-bold uppercase tracking-widest text-zinc-500">Consulting Doctor</p>
+                <h2 className="text-4xl font-black tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl">
+                  Kalyan Chakravarthy Kalwa
+                </h2>
+                <p className="text-lg font-semibold text-zinc-600 dark:text-zinc-400">
+                  MBBS, DPharm
+                </p>
+              </div>
+
+              <p className="text-lg leading-8 text-zinc-600 dark:text-zinc-400">
+                Dr. Kalyan Chakravarthy Kalwa brings practical experience in structured weight-loss care and metabolic health support.
+                The consultation flow is designed for patients who want a clearer plan, closer follow-up, and medically guided next steps.
+              </p>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+                  <p className="text-sm font-bold uppercase tracking-widest text-zinc-500">Weight Loss</p>
+                  <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                    Focuses on treatment pathways, dose progression, and realistic goals for sustained reduction.
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+                  <p className="text-sm font-bold uppercase tracking-widest text-zinc-500">Diabetes</p>
+                  <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                    Supports patients managing diabetes-related concerns alongside their weight-loss program.
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+                <p className="text-sm font-bold uppercase tracking-widest text-zinc-500">Clinical Approach</p>
+                <p className="mt-2 text-sm leading-7 text-zinc-600 dark:text-zinc-400">
+                  The consultation experience emphasizes safety screening, medication fit, and clear expectations before treatment begins.
+                  Users get a simple next step rather than a generic sales pitch.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>

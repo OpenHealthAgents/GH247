@@ -224,7 +224,26 @@ export default function CheckoutView() {
   }
 
   const { region } = recommendations;
-  const recommendedDrugType = recommendations.primary.drugType;
+  if (recommendations.clinicalPath === "doctor_review") {
+    return (
+      <div className="min-h-screen bg-zinc-50 px-6 py-12 dark:bg-black">
+        <div className="mx-auto max-w-2xl space-y-6 rounded-3xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <p className="text-xs font-bold uppercase tracking-widest text-zinc-500">Doctor Review Needed</p>
+          <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-zinc-100">
+            A treatment plan is not available yet
+          </h1>
+          <p className="text-sm leading-7 text-zinc-600 dark:text-zinc-400">
+            {recommendations.summary}
+          </p>
+          <p className="text-sm text-zinc-500">
+            Please complete the doctor review step before checkout.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const recommendedDrugType = recommendations.primary?.drugType;
   const selectedProduct = getBestMatchingProduct(inventory, region.country, recommendedDrugType, selectedProductId) ||
     inventory.find((product) => product.plans.some((plan) => plan.id === selectedPlanId));
   const selectedPricingTier = selectedProduct ? getPricingTierForProduct(selectedProduct) : null;
