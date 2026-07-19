@@ -2,6 +2,7 @@
 
 import { Navbar } from "@/components/common/Navbar";
 import { Footer } from "@/components/common/Footer";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GridPattern } from "@/components/effects/GridPattern";
@@ -62,21 +63,22 @@ const values = [
 
 const leadership = [
   {
-    name: "Dr. Marcus Vance",
+    name: "Dr. Kalyan Kalwa",
     role: "Co-Founder & CEO",
-    bio: "Former Chief Clinical Officer at Stanford Health, pioneering corporate care frameworks.",
-    image: "MV",
+    bio: "Physician, healthcare innovator, and AI pioneer advancing AI-native clinical operating systems, FHIR interoperability, and preventative medicine.",
+    image: "/kalyan-kalwa.jpg",
+    linkedin: "https://www.linkedin.com/in/kalyankalwa/",
   },
   {
     name: "Sarah Jenkins",
     role: "Chief Technology Officer",
-    bio: "Ex-Lead Research Architect at OpenAI, specialized in medical NLP systems.",
+    bio: "Ex-Lead Research Architect at OpenAI, specialized in medical NLP systems and multi-agent infrastructure.",
     image: "SJ",
   },
   {
     name: "Dr. Elizabeth Mercer",
     role: "Chief Medical Officer",
-    bio: "15+ years in preventative diagnostics, directing global clinical compliance.",
+    bio: "15+ years in preventative diagnostics, directing global clinical compliance and telemedicine standards.",
     image: "EM",
   },
 ];
@@ -245,19 +247,54 @@ export default function About() {
 
             <div className="grid grid-cols-1 gap-8 text-left md:grid-cols-3">
               {leadership.map((member) => (
-                <Card key={member.name} glass className="space-y-4 p-6">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 font-bold text-white shadow-md">
-                    {member.image}
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold">{member.name}</h3>
-                    <p className="text-xs font-semibold text-violet-500">
-                      {member.role}
+                <Card
+                  key={member.name}
+                  glass
+                  className="flex flex-col justify-between space-y-4 p-6"
+                >
+                  <div className="space-y-4">
+                    {member.image.startsWith("/") ? (
+                      <div className="relative h-20 w-20 overflow-hidden rounded-2xl border border-violet-500/20 shadow-md">
+                        <Image
+                          src={member.image}
+                          alt={member.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 font-bold text-white shadow-md">
+                        {member.image}
+                      </div>
+                    )}
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-bold">{member.name}</h3>
+                        {member.linkedin && (
+                          <a
+                            href={member.linkedin}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-muted-foreground transition-colors hover:text-blue-500"
+                            aria-label={`${member.name} LinkedIn Profile`}
+                          >
+                            <svg
+                              className="h-4.5 w-4.5 fill-current"
+                              viewBox="0 0 24 24"
+                            >
+                              <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                            </svg>
+                          </a>
+                        )}
+                      </div>
+                      <p className="text-xs font-semibold text-violet-500">
+                        {member.role}
+                      </p>
+                    </div>
+                    <p className="text-muted-foreground text-xs leading-relaxed">
+                      {member.bio}
                     </p>
                   </div>
-                  <p className="text-muted-foreground text-xs leading-relaxed">
-                    {member.bio}
-                  </p>
                 </Card>
               ))}
             </div>
