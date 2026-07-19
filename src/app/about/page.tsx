@@ -70,10 +70,11 @@ const leadership = [
     linkedin: "https://www.linkedin.com/in/kalyankalwa/",
   },
   {
-    name: "Sarah Jenkins",
-    role: "Chief Technology Officer",
-    bio: "Ex-Lead Research Architect at OpenAI, specialized in medical NLP systems and multi-agent infrastructure.",
-    image: "SJ",
+    name: "Monish Verma",
+    role: "Co-Founder & Chief Technology Officer",
+    bio: "Strategic technology leader and AI architect with extensive expertise in scaling global software platforms, enterprise systems, and health tech innovations.",
+    image: "/monish-verma.jpg",
+    linkedin: "https://www.linkedin.com/in/monish-verma-incircle/",
   },
   {
     name: "Dr. Elizabeth Mercer",
