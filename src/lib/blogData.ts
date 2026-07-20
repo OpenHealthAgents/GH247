@@ -30,9 +30,9 @@ export const blogPosts: BlogPost[] = [
     category: "Healthcare AI",
     readTime: "6 min read",
     author: {
-      name: "Dr. Marcus Vance",
+      name: "Dr. Kalyan Kalwa",
       role: "Co-Founder & CEO",
-      avatar: "MV",
+      avatar: "KK",
     },
     toc: [
       { id: "introduction", text: "Introduction", depth: 2 },
@@ -94,9 +94,9 @@ AI-native EMR architectures are no longer a future concept. By merging structure
     category: "Drug Discovery",
     readTime: "8 min read",
     author: {
-      name: "Sarah Jenkins",
-      role: "Chief Technology Officer",
-      avatar: "SJ",
+      name: "Dr. Kalyan Kalwa",
+      role: "Co-Founder & CEO",
+      avatar: "KK",
     },
     toc: [
       {
@@ -146,9 +146,9 @@ By running multi-agent docking simulations on virtual cohorts, we validated bind
     category: "Engineering",
     readTime: "7 min read",
     author: {
-      name: "Sarah Jenkins",
-      role: "Chief Technology Officer",
-      avatar: "SJ",
+      name: "Dr. Kalyan Kalwa",
+      role: "Co-Founder & CEO",
+      avatar: "KK",
     },
     toc: [
       {
