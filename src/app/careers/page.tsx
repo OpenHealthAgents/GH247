@@ -28,6 +28,7 @@ import {
   Megaphone,
   TrendingUp,
   Target,
+  Video,
   MapPin,
   Clock,
   ArrowRight,
@@ -50,6 +51,17 @@ const roles = [
     icon: Megaphone,
     color: "text-violet-500",
     bg: "bg-violet-500/10 border-violet-500/20",
+  },
+  {
+    id: "actor-content-creator-glp1",
+    title: "Actor & Video Creator (GLP-1 Weight Loss Skits)",
+    department: "Creative & Content",
+    location: "Chennai, Tamil Nadu",
+    type: "Contract / Part-Time",
+    desc: "Seeking expressive actors and video creators to film engaging, relatable, and humorous short-form skits for social media promoting our AI-native GLP-1 weight loss coaching product.",
+    icon: Video,
+    color: "text-rose-500",
+    bg: "bg-rose-500/10 border-rose-500/20",
   },
   {
     id: "business-development-intern",
@@ -95,6 +107,7 @@ export default function CareersPage() {
   const departments = [
     "All",
     "Marketing & Growth",
+    "Creative & Content",
     "Business Operations",
     "Sales & Partnerships",
   ];
