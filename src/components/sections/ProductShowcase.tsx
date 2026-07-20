@@ -60,18 +60,6 @@ const products = [
     href: "/products/fitness-coach",
   },
   {
-    id: "rx-os",
-    name: "AI-RxOS",
-    badge: "Pharmacy Routing",
-    description:
-      "Cloud-native pharmacy transmission pipeline. Syncs insurance claims verification and securely transmits encrypted e-prescriptions to 60,000+ local pharmacies.",
-    icon: ShieldCheck,
-    gradient: "from-violet-600 via-fuchsia-500 to-blue-500",
-    color: "text-violet-500",
-    bg: "bg-violet-500/10 border-violet-500/20",
-    href: "/products/medication-intelligence",
-  },
-  {
     id: "medpilot",
     name: "MedPilot",
     badge: "Medication Safety",
@@ -81,6 +69,18 @@ const products = [
     gradient: "from-rose-600 via-orange-500 to-amber-500",
     color: "text-rose-500",
     bg: "bg-rose-500/10 border-rose-500/20",
+    href: "/products/medication-intelligence",
+  },
+  {
+    id: "rx-os",
+    name: "AI-RxOS",
+    badge: "Pharmacy Routing",
+    description:
+      "Cloud-native pharmacy transmission pipeline. Syncs insurance claims verification and securely transmits encrypted e-prescriptions to 60,000+ local pharmacies.",
+    icon: ShieldCheck,
+    gradient: "from-violet-600 via-fuchsia-500 to-blue-500",
+    color: "text-violet-500",
+    bg: "bg-violet-500/10 border-violet-500/20",
     href: "/products/medication-intelligence",
   },
   {

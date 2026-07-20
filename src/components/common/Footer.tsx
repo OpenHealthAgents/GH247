@@ -13,8 +13,8 @@ const productsLinks = [
   { name: "DrGodly", href: "/products/drgodly" },
   { name: "ClaimPulse AI", href: "/products/claims-rcm" },
   { name: "Steady AI", href: "/products/fitness-coach" },
-  { name: "AI-RxOS", href: "/products/medication-intelligence" },
   { name: "MedPilot", href: "/products/medication-intelligence" },
+  { name: "AI-RxOS", href: "/products/medication-intelligence" },
   { name: "WorkPilot AI", href: "/products/marketing-platform" },
 ];
 
