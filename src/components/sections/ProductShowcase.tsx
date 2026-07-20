@@ -8,6 +8,7 @@ import {
   Pill,
   LineChart,
   ReceiptText,
+  Radio,
   ArrowRight,
 } from "lucide-react";
 import {
@@ -94,6 +95,17 @@ const products = [
     color: "text-indigo-500",
     bg: "bg-indigo-500/10 border-indigo-500/20",
     href: "/products/marketing-platform",
+  },
+  {
+    id: "vyapaar-ai",
+    name: "Vyapaar AI",
+    badge: "Hardware & SME AI",
+    description:
+      "Pocketable, screen-free AI hardware assistant for shop owners, distributors, and SMEs in India. Listens, understands, and acts to manage stock, record transactions, reconcile accounts, and process voice payments.",
+    icon: Radio,
+    color: "text-amber-500",
+    bg: "bg-amber-500/10 border-amber-500/20",
+    href: "/products/vyapaar-ai",
   },
 ];
 

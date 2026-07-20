@@ -21,6 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/products/fitness-coach",
     "/products/marketing-platform",
     "/products/medication-intelligence",
+    "/products/vyapaar-ai",
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date().toISOString(),

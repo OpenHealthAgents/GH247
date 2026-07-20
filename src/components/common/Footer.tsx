@@ -16,6 +16,7 @@ const productsLinks = [
   { name: "MedPilot", href: "/products/medication-intelligence" },
   { name: "AI-RxOS", href: "/products/medication-intelligence" },
   { name: "WorkPilot AI", href: "/products/marketing-platform" },
+  { name: "Vyapaar AI", href: "/products/vyapaar-ai" },
 ];
 
 const companyLinks = [
