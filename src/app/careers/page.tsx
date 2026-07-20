@@ -3,6 +3,9 @@
 import { Navbar } from "@/components/common/Navbar";
 import { Footer } from "@/components/common/Footer";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -11,6 +14,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { GridPattern } from "@/components/effects/GridPattern";
 import { GlowEffect } from "@/components/effects/GlowEffect";
 import { Reveal } from "@/components/effects/Reveal";
@@ -23,8 +33,10 @@ import {
   ArrowRight,
   ChevronRight,
   Briefcase,
+  CheckCircle2,
+  AlertCircle,
+  FileText,
 } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
 
 const roles = [
@@ -65,6 +77,20 @@ const roles = [
 
 export default function CareersPage() {
   const [selectedDept, setSelectedDept] = useState("All");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeRole, setActiveRole] = useState("");
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    linkedin: "",
+    coverNote: "",
+  });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const departments = [
     "All",
@@ -77,6 +103,75 @@ export default function CareersPage() {
     selectedDept === "All"
       ? roles
       : roles.filter((r) => r.department === selectedDept);
+
+  const handleOpenApplication = (roleTitle: string) => {
+    setActiveRole(roleTitle);
+    setSubmitted(false);
+    setErrors({});
+    setIsModalOpen(true);
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    if (!formData.name.trim()) newErrors.name = "Full name is required.";
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email.trim()) {
+      newErrors.email = "Email address is required.";
+    } else if (!emailRegex.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address.";
+    }
+
+    if (!formData.linkedin.trim())
+      newErrors.linkedin = "LinkedIn / Portfolio link is required.";
+    if (!formData.coverNote.trim())
+      newErrors.coverNote = "Cover note or background description is required.";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validateForm()) {
+      setSubmitting(true);
+      try {
+        const response = await fetch("/api/careers/apply", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...formData,
+            role: activeRole,
+          }),
+        });
+
+        if (response.ok) {
+          setSubmitted(true);
+          setFormData({
+            name: "",
+            email: "",
+            phone: "",
+            linkedin: "",
+            coverNote: "",
+          });
+        }
+      } catch (err) {
+        console.error("Failed to submit candidate application:", err);
+      } finally {
+        setSubmitting(false);
+      }
+    }
+  };
 
   return (
     <>
@@ -97,8 +192,8 @@ export default function CareersPage() {
               engineers to pioneer AI-native healthcare.
             </p>
             <p className="text-muted-foreground mx-auto max-w-2xl text-base leading-relaxed md:text-lg">
-              We offer competitive equity, comprehensive health benefits,
-              learning stipends, and flexible remote work options.
+              We offer hands-on mentorship, competitive stipends, learning
+              stipends, and real-world project exposure.
             </p>
           </div>
         </section>
@@ -132,7 +227,7 @@ export default function CareersPage() {
             </div>
 
             {/* Roles Grid */}
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
               {filteredRoles.map((role, idx) => {
                 const Icon = role.icon;
                 return (
@@ -183,15 +278,11 @@ export default function CareersPage() {
                         <Button
                           variant="primary"
                           size="sm"
-                          className="w-full gap-1.5"
-                          asChild
+                          className="w-full cursor-pointer gap-1.5"
+                          onClick={() => handleOpenApplication(role.title)}
                         >
-                          <Link
-                            href={`/contact?role=${encodeURIComponent(role.title)}`}
-                          >
-                            Apply for this Position
-                            <ChevronRight className="h-4 w-4" />
-                          </Link>
+                          Apply for this Position
+                          <ChevronRight className="h-4 w-4" />
                         </Button>
                       </div>
                     </Card>
@@ -219,8 +310,8 @@ export default function CareersPage() {
                   </h2>
                   <p className="text-muted-foreground text-sm leading-relaxed">
                     We are always looking for exceptional engineers,
-                    researchers, and clinical experts. Join our general talent
-                    network.
+                    researchers, and growth interns. Submit a general
+                    application.
                   </p>
                 </div>
 
@@ -228,13 +319,13 @@ export default function CareersPage() {
                   <Button
                     variant="premium"
                     size="lg"
-                    className="w-full gap-2"
-                    asChild
+                    className="w-full cursor-pointer gap-2"
+                    onClick={() =>
+                      handleOpenApplication("General Internship Application")
+                    }
                   >
-                    <Link href="/contact">
-                      Submit General Application
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
+                    Submit General Application
+                    <ArrowRight className="h-4 w-4" />
                   </Button>
                 </div>
               </CardContent>
@@ -242,6 +333,177 @@ export default function CareersPage() {
           </div>
         </section>
       </main>
+
+      {/* Candidate Application Modal */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-h-[90vh] max-w-xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-2xl font-bold">
+              <FileText className="h-5 w-5 text-violet-500" />
+              Apply for {activeRole}
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground text-xs">
+              Fill out the form below. Your application will be sent directly to
+              contact@goodhealth247.com.
+            </DialogDescription>
+          </DialogHeader>
+
+          {submitted ? (
+            <div className="flex flex-col items-center space-y-4 py-8 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-500">
+                <CheckCircle2 className="h-8 w-8" />
+              </div>
+              <h3 className="text-2xl font-bold">Application Received!</h3>
+              <p className="text-muted-foreground max-w-md text-xs">
+                Thank you for applying for the <strong>{activeRole}</strong>{" "}
+                position. Our recruiting team will review your application and
+                contact you soon.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsModalOpen(false)}
+                className="mt-2"
+              >
+                Close Window
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4 pt-2 text-left">
+              <div className="space-y-1.5">
+                <Label htmlFor="role" className="text-xs font-semibold">
+                  Position Applied For
+                </Label>
+                <Input
+                  id="role"
+                  value={activeRole}
+                  readOnly
+                  className="bg-secondary/40 text-xs font-semibold"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="name" className="text-xs font-semibold">
+                    Full Name *
+                  </Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    placeholder="Alex Vance"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className={
+                      errors.name ? "border-destructive text-xs" : "text-xs"
+                    }
+                  />
+                  {errors.name && (
+                    <p className="text-destructive flex items-center gap-1 text-[11px]">
+                      <AlertCircle className="h-3 w-3" /> {errors.name}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="email" className="text-xs font-semibold">
+                    Email Address *
+                  </Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="alex@university.edu"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className={
+                      errors.email ? "border-destructive text-xs" : "text-xs"
+                    }
+                  />
+                  {errors.email && (
+                    <p className="text-destructive flex items-center gap-1 text-[11px]">
+                      <AlertCircle className="h-3 w-3" /> {errors.email}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="phone" className="text-xs font-semibold">
+                    Phone Number
+                  </Label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    placeholder="+91 9346317790"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    className="text-xs"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="linkedin" className="text-xs font-semibold">
+                    LinkedIn / Portfolio URL *
+                  </Label>
+                  <Input
+                    id="linkedin"
+                    name="linkedin"
+                    placeholder="https://linkedin.com/in/username"
+                    value={formData.linkedin}
+                    onChange={handleInputChange}
+                    className={
+                      errors.linkedin ? "border-destructive text-xs" : "text-xs"
+                    }
+                  />
+                  {errors.linkedin && (
+                    <p className="text-destructive flex items-center gap-1 text-[11px]">
+                      <AlertCircle className="h-3 w-3" /> {errors.linkedin}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="coverNote" className="text-xs font-semibold">
+                  Background / Why Good Health 247? *
+                </Label>
+                <Textarea
+                  id="coverNote"
+                  name="coverNote"
+                  rows={4}
+                  placeholder="Share a brief overview of your background, experience, and why you are excited about this internship..."
+                  value={formData.coverNote}
+                  onChange={handleInputChange}
+                  className={
+                    errors.coverNote ? "border-destructive text-xs" : "text-xs"
+                  }
+                />
+                {errors.coverNote && (
+                  <p className="text-destructive flex items-center gap-1 text-[11px]">
+                    <AlertCircle className="h-3 w-3" /> {errors.coverNote}
+                  </p>
+                )}
+              </div>
+
+              <div className="pt-2">
+                <Button
+                  variant="primary"
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full cursor-pointer gap-2"
+                >
+                  {submitting
+                    ? "Submitting Application..."
+                    : "Submit Application"}
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Footer />
     </>
   );
