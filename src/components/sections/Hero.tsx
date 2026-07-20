@@ -150,7 +150,7 @@ export function Hero() {
                   <div className="h-3 w-3 rounded-full bg-emerald-500/60" />
                 </div>
                 <div className="text-muted-foreground font-mono text-xs">
-                  good-health-engine.ai
+                  good-health-engine
                 </div>
                 <div className="w-6" />
               </div>
