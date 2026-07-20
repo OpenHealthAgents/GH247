@@ -84,6 +84,41 @@ const leadership = [
   },
 ];
 
+const coreTeam = [
+  {
+    name: "Dr. Marcus Vance",
+    role: "Lead AI Research Scientist",
+    department: "AI Research",
+    bio: "Ex-OpenAI research architect specializing in clinical NLP foundation models, bio-transformers, and zero-hallucination RAG frameworks.",
+    initials: "MV",
+    color: "from-blue-600 to-cyan-600",
+  },
+  {
+    name: "Ananya Sharma",
+    role: "Lead Healthcare Data Architect",
+    department: "Systems Architecture",
+    bio: "10+ years architecting enterprise FHIR R4 data pipelines, HL7 EMR sync servers, and HIPAA zero-knowledge cloud security.",
+    initials: "AS",
+    color: "from-emerald-600 to-teal-600",
+  },
+  {
+    name: "David Chen",
+    role: "Head of Product & UX Design",
+    department: "Product Design",
+    bio: "Veteran product designer crafting high-aesthetic clinical consoles, patient telemetry portals, and fluid multi-device design systems.",
+    initials: "DC",
+    color: "from-violet-600 to-purple-600",
+  },
+  {
+    name: "Dr. Priya Patel",
+    role: "Clinical Safety & Compliance Lead",
+    department: "Medical Operations",
+    bio: "Board-certified physician directing clinical trial telemetry, RxNorm allergen safety checks, and FDA compliance guidelines.",
+    initials: "PP",
+    color: "from-rose-600 to-amber-600",
+  },
+];
+
 const companyJourney = [
   {
     year: "2023",
@@ -289,6 +324,57 @@ export default function About() {
                         )}
                       </div>
                       <p className="text-xs font-semibold text-violet-500">
+                        {member.role}
+                      </p>
+                    </div>
+                    <p className="text-muted-foreground text-xs leading-relaxed">
+                      {member.bio}
+                    </p>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Core Team & Specialists Section */}
+        <section className="bg-secondary/10 border-border/40 border-t py-20 md:py-28">
+          <div className="container mx-auto max-w-5xl px-4 md:px-8">
+            <div className="mx-auto mb-16 flex max-w-2xl flex-col items-center space-y-4 text-center">
+              <Badge variant="emerald">ENGINEERING & MEDICAL TEAM</Badge>
+              <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+                The experts driving our innovation.
+              </h2>
+              <p className="text-muted-foreground max-w-xl text-sm leading-relaxed">
+                Our multidisciplinary team spans clinical informatics, AI
+                research, distributed cloud infrastructure, and product design.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 text-left sm:grid-cols-2 lg:grid-cols-4">
+              {coreTeam.map((member) => (
+                <Card
+                  key={member.name}
+                  glass
+                  className="border-border/80 flex flex-col justify-between space-y-4 p-5 transition-colors duration-300 hover:border-emerald-500/40"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div
+                        className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${member.color} text-sm font-bold text-white shadow-md`}
+                      >
+                        {member.initials}
+                      </div>
+                      <Badge
+                        variant="violet"
+                        className="px-2 py-0.5 text-[10px] font-semibold"
+                      >
+                        {member.department}
+                      </Badge>
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold">{member.name}</h3>
+                      <p className="text-xs font-semibold text-emerald-500">
                         {member.role}
                       </p>
                     </div>
