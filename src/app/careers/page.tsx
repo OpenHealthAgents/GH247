@@ -30,6 +30,7 @@ import {
   Target,
   Video,
   Calendar,
+  Database,
   MapPin,
   Clock,
   ArrowRight,
@@ -52,6 +53,17 @@ const roles = [
     icon: Megaphone,
     color: "text-violet-500",
     bg: "bg-violet-500/10 border-violet-500/20",
+  },
+  {
+    id: "data-engineer-intern-growth",
+    title: "Data Engineer Intern (Growth Intelligence)",
+    department: "Data & Analytics",
+    location: "Chennai, Tamil Nadu",
+    type: "Internship (Fall / Spring 2026)",
+    desc: "Build automated web scrapers, data pipelines, and verified lead registries targeting fitness gyms, wellness centers, and beauty salons across India and the USA for market expansion.",
+    icon: Database,
+    color: "text-cyan-500",
+    bg: "bg-cyan-500/10 border-cyan-500/20",
   },
   {
     id: "event-manager-intern",
@@ -118,6 +130,7 @@ export default function CareersPage() {
 
   const departments = [
     "All",
+    "Data & Analytics",
     "Marketing & Growth",
     "Events & Outreach",
     "Creative & Content",
