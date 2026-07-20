@@ -92,17 +92,34 @@ export default function Contact() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      setSubmitted(true);
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        company: "",
-        message: "",
-      });
+      setSubmitting(true);
+      try {
+        const response = await fetch("/api/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+
+        if (response.ok) {
+          setSubmitted(true);
+          setFormData({
+            name: "",
+            email: "",
+            phone: "",
+            company: "",
+            message: "",
+          });
+        }
+      } catch (err) {
+        console.error("Failed to submit form:", err);
+      } finally {
+        setSubmitting(false);
+      }
     }
   };
 
@@ -427,9 +444,12 @@ export default function Contact() {
                         variant="primary"
                         type="submit"
                         size="lg"
+                        disabled={submitting}
                         className="w-full cursor-pointer gap-2"
                       >
-                        Submit Message
+                        {submitting
+                          ? "Submitting Inquiry..."
+                          : "Submit Message"}
                         <ArrowRight className="h-4 w-4" />
                       </Button>
                     </form>
