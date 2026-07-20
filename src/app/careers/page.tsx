@@ -29,6 +29,7 @@ import {
   TrendingUp,
   Target,
   Video,
+  Calendar,
   MapPin,
   Clock,
   ArrowRight,
@@ -51,6 +52,17 @@ const roles = [
     icon: Megaphone,
     color: "text-violet-500",
     bg: "bg-violet-500/10 border-violet-500/20",
+  },
+  {
+    id: "event-manager-intern",
+    title: "Event Manager Intern",
+    department: "Events & Outreach",
+    location: "Chennai, Tamil Nadu",
+    type: "Internship (Fall / Spring 2026)",
+    desc: "Organize, manage, and host flagship healthcare technology webinars, live AI workshops, and community events in Chennai to engage clinical partners and growth networks.",
+    icon: Calendar,
+    color: "text-amber-500",
+    bg: "bg-amber-500/10 border-amber-500/20",
   },
   {
     id: "actor-content-creator-glp1",
@@ -107,6 +119,7 @@ export default function CareersPage() {
   const departments = [
     "All",
     "Marketing & Growth",
+    "Events & Outreach",
     "Creative & Content",
     "Business Operations",
     "Sales & Partnerships",
