@@ -191,9 +191,9 @@ export default function Contact() {
                       <p className="text-muted-foreground text-xs leading-relaxed">
                         Good Health 247 Inc.
                         <br />
-                        Sachidananda Puram, Thazhambur
+                        Sachidananda Puram, Thazhambur, 600130
                         <br />
-                        Chennai, Tamil Nadu - 600130, India
+                        Chennai, Tamil Nadu, India
                       </p>
                     </div>
                   </Card>
