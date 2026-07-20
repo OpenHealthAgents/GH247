@@ -16,6 +16,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/blog",
     "/design-system",
     "/products/drgodly",
+    "/products/claims-rcm",
     "/products/drug-discovery",
     "/products/fitness-coach",
     "/products/marketing-platform",

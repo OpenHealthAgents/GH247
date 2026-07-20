@@ -7,6 +7,7 @@ import {
   ShieldCheck,
   Pill,
   LineChart,
+  ReceiptText,
   ArrowRight,
 } from "lucide-react";
 import {
@@ -32,6 +33,19 @@ const products = [
     gradient: "from-blue-600 via-indigo-500 to-violet-500",
     color: "text-blue-500",
     bg: "bg-blue-500/10 border-blue-500/20",
+    href: "/products/drgodly",
+  },
+  {
+    id: "claims-rcm",
+    name: "ClaimPulse AI",
+    badge: "Claims & RCM",
+    description:
+      "Autonomous healthcare claims adjudication and revenue cycle management. Features real-time EDI 837 scrubbing, AI prior-authorization, and automated denial appeal swarms.",
+    icon: ReceiptText,
+    gradient: "from-amber-600 via-violet-500 to-emerald-500",
+    color: "text-amber-500",
+    bg: "bg-amber-500/10 border-amber-500/20",
+    href: "/products/claims-rcm",
   },
   {
     id: "steady-ai",
@@ -43,6 +57,7 @@ const products = [
     gradient: "from-emerald-600 via-teal-500 to-indigo-500",
     color: "text-emerald-500",
     bg: "bg-emerald-500/10 border-emerald-500/20",
+    href: "/products/fitness-coach",
   },
   {
     id: "rx-os",
@@ -54,6 +69,7 @@ const products = [
     gradient: "from-violet-600 via-fuchsia-500 to-blue-500",
     color: "text-violet-500",
     bg: "bg-violet-500/10 border-violet-500/20",
+    href: "/products/medication-intelligence",
   },
   {
     id: "medpilot",
@@ -65,6 +81,7 @@ const products = [
     gradient: "from-rose-600 via-orange-500 to-amber-500",
     color: "text-rose-500",
     bg: "bg-rose-500/10 border-rose-500/20",
+    href: "/products/medication-intelligence",
   },
   {
     id: "workpilot-ai",
@@ -76,6 +93,7 @@ const products = [
     gradient: "from-indigo-600 via-blue-500 to-emerald-500",
     color: "text-indigo-500",
     bg: "bg-indigo-500/10 border-indigo-500/20",
+    href: "/products/marketing-platform",
   },
 ];
 
@@ -108,7 +126,7 @@ export function ProductShowcase() {
           </h2>
           <p className="text-muted-foreground">
             Explore our clinical suites engineered to connect patient telemetry,
-            physician routing, and corporate wellness.
+            physician routing, and revenue cycle management.
           </p>
         </div>
 
@@ -171,13 +189,7 @@ export function ProductShowcase() {
                       className="hover:text-primary shrink-0 cursor-pointer gap-1.5 p-0 text-sm font-semibold transition-transform duration-300 group-hover:translate-x-1 hover:bg-transparent"
                       asChild
                     >
-                      <Link
-                        href={
-                          product.id === "drgodly"
-                            ? "/products/drgodly"
-                            : "/contact"
-                        }
-                      >
+                      <Link href={product.href}>
                         Learn More
                         <ArrowRight className="h-4 w-4" />
                       </Link>
