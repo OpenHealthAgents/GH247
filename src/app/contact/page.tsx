@@ -191,9 +191,9 @@ export default function Contact() {
                       <p className="text-muted-foreground text-xs leading-relaxed">
                         Good Health 247 Inc.
                         <br />
-                        Market Street, Suite 800
+                        Sachidananda Puram, Thazhambur
                         <br />
-                        San Francisco, CA 94103
+                        Chennai, Tamil Nadu - 600130, India
                       </p>
                     </div>
                   </Card>
@@ -260,17 +260,17 @@ export default function Contact() {
                 >
                   <div className="text-muted-foreground flex items-center justify-between font-mono text-xs">
                     <span>HQ LOCATION MAP</span>
-                    <span>37.7749° N, 122.4194° W</span>
+                    <span>12.8398° N, 80.2291° E</span>
                   </div>
                   {/* Map Mock Graphic */}
                   <div className="bg-secondary/40 border-border/40 relative flex h-48 w-full flex-col items-center justify-center overflow-hidden rounded-xl border p-4 text-center">
                     <GridPattern className="opacity-30" strokeDasharray="2 2" />
                     <MapPin className="relative z-10 mb-2 h-8 w-8 animate-bounce text-violet-500" />
                     <span className="relative z-10 text-xs font-bold">
-                      San Francisco Tech Hub
+                      Chennai Tech Hub
                     </span>
                     <span className="text-muted-foreground relative z-10 text-[11px]">
-                      Market Street Campus
+                      Sachidananda Puram Campus
                     </span>
                   </div>
                 </Card>

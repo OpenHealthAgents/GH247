@@ -88,7 +88,7 @@ const companyJourney = [
   {
     year: "2023",
     title: "Foundation & AI R&D",
-    desc: "Good Health 247 founded in San Francisco. Initial training models on closed clinical biometric data structures.",
+    desc: "Good Health 247 founded in Chennai, India. Initial training models on closed clinical biometric data structures.",
   },
   {
     year: "2024",
