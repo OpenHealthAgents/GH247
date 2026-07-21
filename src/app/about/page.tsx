@@ -71,7 +71,7 @@ const leadership = [
   },
   {
     name: "Monish Verma",
-    role: "Chief Marketing and Sales Manager",
+    role: "Chief Marketing Officer",
     bio: "Strategic growth leader and executive strategist with extensive expertise in scaling global software platforms, commercial partnerships, and health tech innovations.",
     image: "/monish-verma.jpg",
     linkedin: "https://www.linkedin.com/in/monish-verma-incircle/",
