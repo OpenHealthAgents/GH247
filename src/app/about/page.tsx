@@ -64,23 +64,23 @@ const values = [
 const leadership = [
   {
     name: "Dr. Kalyan Kalwa",
-    role: "Co-Founder & CEO",
+    role: "Chief Medical Officer",
     bio: "Physician, healthcare innovator, and AI pioneer advancing AI-native clinical operating systems, FHIR interoperability, and preventative medicine.",
     image: "/kalyan-kalwa.jpg",
     linkedin: "https://www.linkedin.com/in/kalyankalwa/",
   },
   {
     name: "Monish Verma",
-    role: "Co-Founder & Chief Technology Officer",
-    bio: "Strategic technology leader and AI architect with extensive expertise in scaling global software platforms, enterprise systems, and health tech innovations.",
+    role: "Chief Marketing and Sales Manager",
+    bio: "Strategic growth leader and executive strategist with extensive expertise in scaling global software platforms, commercial partnerships, and health tech innovations.",
     image: "/monish-verma.jpg",
     linkedin: "https://www.linkedin.com/in/monish-verma-incircle/",
   },
   {
-    name: "Dr. Elizabeth Mercer",
-    role: "Chief Medical Officer",
-    bio: "15+ years in preventative diagnostics, directing global clinical compliance and telemedicine standards.",
-    image: "EM",
+    name: "Gunasekaran",
+    role: "Chief Technology Officer",
+    bio: "Technology leader and systems architect directing core AI platform development, cloud infrastructure, and enterprise engineering standards.",
+    image: "/gunasekaran.jpg",
   },
 ];
 
